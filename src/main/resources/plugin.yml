@@ -1,0 +1,265 @@
+name: AdminAnything
+authors: [martinambrus]
+description: Solve plugin conflicts, disable & mute commands, optimize, administrate, build a help system.
+main: com.martinambrus.adminAnything.AdminAnything
+load: POSTWORLD
+version: ${pluginVersion}
+api-version: 1.13
+softdepend: [ProtocolLib, Vault, EasyChat]
+permissions:
+  aa.listcommands:
+    default: op
+    description: Allows listing of all loaded commands for all plug-ins on the server.
+  aa.checkcommandConflicts:
+    default: op
+    description: Allows checking for commands and aliases that conflict with each other.
+  aa.fixcommand:
+    default: op
+    description: Allows assigning a conflicting command the exact plugin that should perform it.
+  aa.info:
+    default: op
+    description: Allows the user of /aa_info command to see all fixed, muted, disabled... commands.
+  aa.unfixcommand:
+    default: op
+    description: Allows reverting a fixed command to its initial state - i.e. will allow the server to handle conflicts in any way it sees fit.
+  aa.deletecommand:
+    default: op
+    description: Allows removing a command from the server completely, so it's not executed anymore.
+  aa.undeletecommand:
+    default: op
+    description: Allows reverting a deleted command, so it's once again run as it was before.
+  aa.disablehelpcommand:
+    default: op
+    description: Allows removing a command from showing in the /aa_playercommands listing.
+  aa.enablehelpcommand:
+    default: op
+    description: Allows re-enabling a command, so it shows in the /aa_playercommands listing.
+  aa.bypassdeletecommand:
+    default: op
+    description: Allows running any command that was disabled.
+  aa.bypassdeletecommand.all:
+    default: op
+    description: Allows running any command that was disabled.
+  aa.mutecommand:
+    default: op
+    description: Allows muting commands, so they won't broadcast any messages to the console or to players.
+  aa.unmutecommand:
+    default: op
+    description: Allows un-muting of commands.
+  aa.ignorecommand:
+    default: op
+    description: Allows to add a command to a list of ignored conflicted commands.
+  aa.unignorecommand:
+    default: op
+    description: Allows to remove a command from the list of ignored conflicted commands.
+  aa.reload:
+    default: op
+    description: Allows reloading of AdminAnything configuration.
+  aa.clearchat:
+    default: true
+    description: Allows using /aa_clearchat to clear one's chat.
+  aa.checkplayerperms:
+    default: op
+    description: Allows to display any player's currently assigned permissions.
+  aa.checkpluginperms:
+    default: op
+    description: Allows to display permissions for the given plugin along with their descriptions.
+  aa.checkplayercommands:
+    default: op
+    description: Allows to display commands available to any online player.
+  aa.checkplayercommands.own:
+    default: true
+    description: Allows to display player's own commands available to them.
+  aa.allowaddperm:
+    default: op
+    description: Allows adding permissions for commands that do not have any permissions assigned.
+  aa.allowremperm:
+    default: op
+    description: Allows removing permissions added by /aa_addperm for commands that do not have any permissions assigned.
+  aa.showactions:
+    default: op
+    description: Allows showing available actions for the command or alias listed. Player chat permission only.
+  aa.allownickgui:
+    default: op
+    description: Allows showing and using administrative chest GUI when a player clicks on other player's username in chat.
+  aa.allowchatnickclick:
+    default: op
+    description: Allows clicking on nicks in chat which will perform action set in the config.
+  aa.allowjoinleaveclick:
+    default: op
+    description: Allows showing and using administrative links when a player joins/leaves the server.
+  aa.notifynewversion:
+    default: op
+    description: Allows for chat notifications on player join when a new version of AdminAnything is available for download.
+  aa.showversion:
+    default: op
+    description: Allows displaying current AdminAnything version via aa_version.
+  aa.allowredirectadd:
+    default: op
+    description: Allows adding new command redirects for AdminAnything (for example to redirect "/warp shop" to "/shop")
+  aa.allowredirectremove:
+    default: op
+    description: Allows removing command redirects
+  aa.checkplayercommands.admin:
+    default: op
+    description: Allows administration of hidden commands in the /aa_playercommands listing.
+    children:
+      aa.disablehelpcommand: true
+      aa.enablehelpcommand: true
+  aa.debug:
+    default: op
+    description: Allows usage of the /aa_debug command.
+  aa.fulltabcomplete:
+    default: op
+    description: Allows to see tab completions for all commands on the server that the server will disclose to this player.
+commands:
+  aa_listcommands:
+    description: Lists all loaded commands for all plug-ins.
+    usage:  /<command> (?) (optionalPageNumber) -> use questionmark to list available filters
+    permission: aa.listcommands
+    permission-message: This is currently disabled.
+    aliases: [listcommands,lc]
+  aa_checkcommandconflicts:
+    description: Checks for commands and aliases that conflict with each other and display them.
+    usage:  /<command> (optionalPageNumber)
+    permission: aa.checkcommandconflicts
+    permission-message: This is currently disabled.
+    aliases: [checkcommandconflicts,ccc]
+  aa_fixcommand:
+    description: Hard-wires a conflicting command to the exact plugin that should perform it. I.e. to make Essentials perform /repair instead of mcMMO, do /aa_fixcommand repair essentials:repair
+    usage:  /<command> <conflictingCommand> (PluginName.CommandName)
+    permission: aa.fixcommand
+    permission-message: This is currently disabled.
+    aliases: [fixcommand,fixc]
+  aa_unfixcommand:
+    description: Undoes hard-wired conflicting command, so the server will handle its execution in a default way.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.unfixcommand
+    permission-message: This is currently disabled.
+    aliases: [unfixcommand,unfixc]
+  aa_disablecommand:
+    description: Disables a command on the server, so it's ignored if anyone tries to run it.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.deletecommand
+    permission-message: This is currently disabled.
+    aliases: [delcommand,delc,disablecommand,dcmd]
+  aa_enablecommand:
+    description: Restores a command disabled by aa_disablecommand to its working state.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.undeletecommand
+    permission-message: This is currently disabled.
+    aliases: [undelcommand,undelc,enablecommand,enablec]
+  aa_disablehelpcommand:
+    description: Disables a command from showing up in /aa_playercommands listing, optionally for a single permission group only.
+    usage:  /<command> commandName (groupName)
+    permission: aa.disablehelpcommand
+    permission-message: This is currently disabled.
+    aliases: [disablehelpcommand,disablehc,adhc]
+  aa_enablehelpcommand:
+    description: Re-enables a command to be shown in /aa_playercommands listing again.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.enablehelpcommand
+    permission-message: This is currently disabled.
+    aliases: [enablehelpcommand,aehc,enablehc]
+  aa_mutecommand:
+    description: Mutes a command on the server, so it doesn't send any console or chat messages when used.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.mutecommand
+    permission-message: This is currently disabled.
+    aliases: [mutecommand,mc,mutec]
+  aa_unmutecommand:
+    description: Un-mutes a command that was muted by aa_mutecommand.
+    usage:  /<command> (command1) (command2) (command3)
+    permission: aa.unmutecommand
+    permission-message: This is currently disabled.
+    aliases: [unmutecommand,umc,unmutec]
+  aa_clearchat:
+    description: Clears the chat or console window.
+    usage:  /<command>
+    permission: aa.clearchat
+    permission-message: This is currently disabled.
+    aliases: [clearchat,cls,clr]
+  aa_playerperms:
+    description: Displays all permissions that a player currently has.
+    usage:  /<command> <Player>
+    permission: aa.checkplayerperms
+    permission-message: This is currently disabled.
+    aliases: [playerperms]
+  aa_playercommands:
+    description: Displays all commands that a player currently has.
+    usage:  /<command> <Player> (OptionalPageNumber)
+    permission: aa.checkplayercommands.own
+    permission-message: This is currently disabled.
+    aliases: [playercommands,playercomms,pc,pcommands]
+  aa_pluginperms:
+    description: Displays all permissions for a given plugin along with their descriptions.
+    usage:  /<command> <PluginName>
+    permission: aa.checkpluginperms
+    permission-message: This is currently disabled.
+    aliases: [pluginperms]
+  aa_ignorecommand:
+    description: Adds the given command to a list of commands for which conflicts are being ignored.
+    usage:  /<command> <commandName>
+    permission: aa.ignorecommand
+    permission-message: This is currently disabled.
+    aliases: [ignorecommand,ignorec,ic]
+  aa_unignorecommand:
+    description: Removes the given command from the list of commands for which conflicts are being ignored.
+    usage:  /<command> <commandName>
+    permission: aa.unignorecommand
+    permission-message: This is currently disabled.
+    aliases: [unignorecommand,unignorec,uic]
+  aa_addperm:
+    description: Adds a virtual permission for a command (including any provided parameters, i.e. "/kit abc") that can be used to enable/disable access to it.
+    usage:  /<command> <newPermName> <commandLine>
+    permission: aa.allowaddperm
+    permission-message: This is currently disabled.
+    aliases: [addperm]
+  aa_delperm:
+    description: Removes a virtual permission added via the /aa_addperm command.
+    usage:  /<command> <permName>
+    permission: aa.allowremperm
+    permission-message: This is currently disabled.
+    aliases: [delperm,remperm]
+  aa_actions:
+    description: Shows all available actions for the given command.
+    usage:  /<command> <commandName>
+    permission: aa.showactions
+    permission-message: This is currently disabled.
+  aa_addredirect:
+    description: Adds a command redirect.
+    usage:  /<command> "<commandToRedirect>" "<redirectTo>"
+    permission: aa.allowredirectadd
+    permission-message: This is currently disabled.
+    aliases: [addredirect,ar]
+  aa_delredirect:
+    description: Removes a command redirect.
+    usage:  /<command> <redirectedCommand>
+    permission: aa.allowredirectremove
+    permission-message: This is currently disabled.
+    aliases: [delredirect,remredirect,remred,rr]
+  aa_gui:
+    description: Shows a chest GUI with actions that can be performed on the given player.
+    usage: /<command> <Player>
+    permission: aa.chatnickguicommand
+    permission-message: This is currently disabled.
+  aa_info:
+    description: Shows all currently fixed, muted, disabled... commands on the server, including warnings about invalid values from removed plugins.
+    usage:  /<command>
+    permission: aa.info
+    permission-message: This is currently disabled.
+  aa_version:
+    description: Shows current AdminAnything version.
+    usage:  /<command>
+    permission: aa.showversion
+    permission-message: This is currently disabled.
+  aa_reload:
+    description: Reloads AdminAnything configuration
+    usage:  /<command>
+    permission: aa.reload
+    permission-message: This is currently disabled.
+  aa_debug:
+    description: Turns debugging for AdminAnything on or off.
+    usage:  /<command>
+    permission: aa.debug
+    permission-message: This is currently disabled.

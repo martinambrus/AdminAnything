@@ -1,0 +1,17 @@
+db_type: mysql
+host: localhost
+port: 3306
+db_name: minecraft # you may want to use ?useSSL=false for localhost or if your console is spamming you with SSL warnings
+user: root
+password: ""
+table_prefix: aa_
+sync_check_interval_seconds: 60
+sync_main: true
+sync_disables: true
+sync_ignores: true
+sync_mutes: true
+sync_overrides: true
+sync_perms: true
+sync_redirects: true
+sync_helpDisables: true
+sync_permDescriptions: true

@@ -1,0 +1,90 @@
+features:
+  actions:
+    enabled: true
+  addperm:
+    enabled: true
+    linked:
+    - delperm
+  apifullaccess:
+    enabled: false
+  autoupdate:
+    enabled: true
+  checkcommandconflicts:
+    enabled: true
+  clearchat:
+    enabled: true
+  chatnickgui:
+    enabled: true
+  chatnickguicommand:
+    enabled: true
+  chatnicklinks:
+    enabled: true
+  chatjoinleaveclicks:
+    enabled: true
+  debug:
+    enabled: false
+  disablecommand:
+    enabled: true
+    linked:
+    - enablecommand
+  disablehelpcommand:
+    enabled: true
+    linked:
+      - enablehelpcommand
+  fixcommand:
+    enabled: true
+    linked:
+    - unfixcommand
+  info:
+    enabled: true
+  ignorecommand:
+    enabled: true
+    linked:
+    - unignorecommand
+  listcommands:
+    enabled: true
+  mutecommand:
+    enabled: true
+    linked:
+    - unmutecommand
+  playercommands:
+    enabled: true
+  playerperms:
+    enabled: true
+  playerpermscaseinsensitive:
+    enabled: true
+  pluginperms:
+    enabled: true
+  redirectcommand:
+    enabled: true
+    linked:
+    - remredirect
+  reload:
+    enabled: true
+  tabcompletedisable:
+    enabled: true
+  version:
+    enabled: true
+listcommandsDefaults:
+  showdescriptions: true
+  showaliases: false
+  showpermissions: false
+  showpermissiondescriptions: false
+  showusage: false
+  multiline: false
+listCommandsSeparator: " "
+chatNickClickActions: []
+chatJoinLeaveActions: []
+chatNickGUI: []
+nickGUICloseAfterRunningCommand: true
+chatKickAfterIpBan: true
+banIpCommands:
+  - banip
+  - ban-ip
+pluginsWithFullWriteAccessViaAPI:
+  - AdminAnything
+firstRun: true
+lang: en-gb
+debugMode: false
+updateInterval: 7200
+chatMaxPerPageRecords: 10

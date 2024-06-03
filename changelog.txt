@@ -1,0 +1,1213 @@
+Version 2.4.10
+==============
+Maintenance version
+
+Fixed:
+* warning in console about ProtocolLib not installed even if no nick click GUI features are enabled
+* updated and fixed some Essenials permissions and commands in the permdescriptions.yml file
+
+Added:
+* commands for CMI in the permdescriptions.yml file
+
+
+
+Version 2.4.9
+=============
+Maintenance version
+
+Fixed:
+* PowerTools in Essentials stopped working correctly when commands from Essentials were being fixed with AA
+* BStats statistics "In Use" and "Not In Use" texts corrected (so they don't break stats anymore by multiple versions of "In Use" and "in use" in them)
+* automatic tab-complete disabler didn't work correctly when changing worlds
+
+
+
+Version 2.4.8
+=============
+Maintenance version
+
+Fixed:
+* when AA's config file is incorrectly formatted, it gets replaced by a default config which resets all values and removes all click and gui actions. This fix adds saving configuration into a backup file (config-file.yml.backup) on each load of AA, so you can salvage your old config and correct YAML errors in it. This way you don't loose your custom (albeit incorrect) values.
+
+
+
+Version 2.4.7
+=============
+Maintenance version (with a severe breaking change - please read the changelog below for details)
+
+Fixed:
+* compatibility with Heretere's Per World Plugins
+
+Removed:
+* commands muting (for MC 1.17+ and Java 11)
+  Explanation: Java 11 is soon to be the only way to run a Minecraft server. I've recently discovered that Java 11 fixed a bunch of security holes. These allowed us to directly adjust Minecraft server classes to stop sending messages to console and players. I tried my best to work around these fixed in Java 11 but I was unsuccessful. The only other way for me to try would be to learn how to work with byte-buddy-agent Java tool and utilize it to do what I previously did by hand. However, since my time is currently fairly limited by the job I'm paid for, I'm only willing to do this for a generous donation of at least $500 (refundable in case I'm unable to provide a working muting solution). Therefore, I'm sorry to say that so far, it seems that MC 1.16.X will be the last version to support commands muting. Muting will be still available for older servers, even in new AA versions. However, it will not be usable on 1.17+ servers with any accuracy anymore.
+
+
+
+Version 2.4.6
+=============
+Maintenance version
+
+Fixed:
+* MySQL tables creation updated to allow for holding configs larger than 64kb (such as commands from permdescriptions.yml)
+* NullPointer exception during AA startup in rare cases
+* a typo that caused DB-based configs to fail to load under certain conditions
+* DB-based config file was not created until the config.yml backend was set to DB - it's now always created if it doesn't exist
+
+
+
+Version 2.4.5
+=============
+Maintenance version
+
+Fixed:
+* chest GUI failed to correctly run commands that open another inventory (such as /openinv or /cmi inv)
+
+
+
+Version 2.4.4
+=============
+Maintenance version
+
+Fixed:
+* NullPointerException fixed while loading AA on servers that lag a lot during startup
+* AA always regenerating default sample config values for clickable chat nick actions, leaving users unable to remove them
+
+Added:
+* text in language file can now contain color codes that will translate into real colors in chat
+
+
+Version 2.4.3
+=============
+Maintenance version
+
+Fixed:
+* error during AA plugin load when the EasyChat plugin is not found on server
+* chest GUI did not open for OP but rather for the player who that OP ran /aa_gui command for :-DD
+
+Updated:
+* moved tab-auto-complete routine into a separate thread, so it doesn't lag out servers with too many plugins (and therefore too many perms to check for players)
+
+
+
+Version 2.4.2
+=============
+Maintenance version
+
+Fixed:
+* after the chest GUI update, servers without ProtocolLib experienced chat doubling and incorrect [A] prefix chat positioning on a line before the actual chat message
+* /aa_debug did not store debug state in the database when DB backend was used for configuration
+
+Updated:
+* first update check after AA is enabled is now asynchronous, so it doesn't pause the server until that check finishes
+
+
+
+Version 2.4.1
+=============
+Maintenance version
+
+Fixed:
+* 1.13+ MC versions error with material names being used incorrectly in AdminAnything
+
+
+
+Version 2.4.0
+=============
+New major version
+
+Added:
+* a new nick-click GUI - there is a new [A] prefix in player chat next to player names which will execute the new /aa_gui command to present actions from your config in a nice chest GUI
+* a new command was added to open the chest GUI - /aa_gui <Player>, can be enabled or disabled separately to the nick click [A] chat prefix via features configuration option "chatnickguicommand"
+* new configuration sections: chatNickGUI, as well as new configuration feature section (so you can potentially disable the nick click [A] chat prefix): chatnickgui
+* new permission nodes: aa.allownickgui to show nick click [A] prefix actions in chat, aa.chatnickguicommand to allow access to the /aa_gui command
+
+Fixed:
+* permissions for EssentialsSpawn and EssentialsXMPP modules of EssentialsX corrected in permdescriptions.yml file, as this has previously resulted in /spawn, /setspawn, /setxmpp, /xmpp and /xmppspy commands not showing in the auto-generated tab-complete menu for player-enabled commands
+* automatic tab-complete builder contained error, where commands unavailable to player could still be show in tab-complete if these commands were prefixed by a plugin name (essentials:ban etc.)
+* a random NullPointerException for automatic tab-completes disabler
+* NullPointerExceptions when server lags and AA is too slow to respond to ProtocolLib's packets sending to adjust chat with prefixes from config
+
+
+
+Version 2.3.6
+=============
+Maintenance version
+
+Added:
+* each clickable chat action can now have ana optional permission node assigned, so only those players with this node would be able to see that chat action link (configuration section updated: chatNickClickActions)
+
+Updated:
+* clickable chat actions next to nicknames are now condensed into a single square bracket to save space in chat
+
+Fixed:
+* AA failed to fix Core commands (give, ban, kick...) back to their server originals (minecraft:ban, minecraft:kick etc.) via /fixc give minecraft:give
+* listing commands via /aa_listcommands for plugin that contained no permissions returned "null" as permissions information
+* /aa_addredirect cmd1 cmd2 Param1 Param2  - was lowercasing parameters, which could result in an incorrect redirection (such as /aa_addredirect me "say Oh, what a great day!" redirecting to "say oh, what a great day")
+* /aa_addredirect failed to handle wrongly quoted commands to redirect to, such as /aa_addredirect me "it's all about me
+* /aa_addredirect wrongly redirected to empty command if the command to redirect to ended with a space, for example /addredirect about "say hello "
+
+
+
+Version 2.3.5
+=============
+Maintenance version
+
+Fixed:
+* PlaceholderAPI plugin loads its expansions in a way that disables AA to check those commands for their owning plugin, resulting in AA crashing during startup
+
+
+
+Version 2.3.4
+=============
+Maintenance version
+Updated:
+
+* official compatibility with Spigot versions 1.16.x (although AA was already forward-compatible with 1.16 versions beforehand)
+
+
+
+Version 2.3.3
+=============
+Maintenance version
+
+Fixed:
+* chat GUI for /aa_listcommands showed "PermDesc" as clickable filter option when not in multiline mode
+* it was not possible to disable any commands that start with // (usually WorldEdit commands) with /aa_disablecommand
+* the aa.bypassdeletecommand.all permission for disabling commands was actually being checked as aa.bypassdeletecommand.any,
+  so checking for it did not work
+* internally checking for multiple bypass permissions (example: aa.bypassdeletecommand, aa.bypassdeletecommand.all and aa.bypassdeletecommand.say)
+  did not always work as intended
+* adding a multi-level manual permission via /aa_addperm (say.badword) resulted in that permission being impossible to remove
+  via /aa_delperm
+
+
+
+Version 2.3.2
+=============
+Maintenance version
+
+Fixed:
+* NullPointerException fix for chat plugins that could interfere with AA's chat adjustments functionality
+* values from the configuration sections chatNickClickActions were presented in unordered fashion
+* disabled commands are no longer being displayed in the /aa_playercommands listing or tab-complete
+
+Updated:
+* /aa_listcommands now contains clickable header with pagination both, on top and bottom of the listing
+  when used via player chat
+* number of records to send out per page to player chat can now be set in config (defaults to 10)
+
+
+
+Version 2.3.1
+=============
+Maintenance version
+
+Fixed:
+* NullPointerException fix for the UltraPermissions plugin with invalid configurations
+
+
+
+Version 2.3.0
+=============
+New major version
+
+Fixed:
+* routine for handling clickable nick links in chat next to player names might have been initialized multiple times
+  upon plugin reload, thus unnecessarily wasting some server resources when ProtocolLib was enabled
+* one more IllegalAccessError instance fixed for Minecraft 1.7 - looks like these only occur on plugin reload, which
+  disables and then re-enables AA, so most of you guys should be safe from these by default :)
+* chat action links next to nicknames functionality was not being enabled (possibly for a long time now!),
+  so please don't be surprised if you left this functionality on and didn't see anything special next to your player names
+  because now you will
+* custom command definitions in the permdescriptions.yml file caused an ArrayOutOfBounds exception in certain situations
+* potential NullPointer Exception when player leaves the server and AA still tries to send them chat messages (i.e. a leave message)
+
+Added:
+* Oh Wow! Automatic tab-complete disabler! Now, seriously... how cool is this?
+  With the help of AA's /aa_playercommands command, players can now see their own available commands. But until now, they
+  would also see ALL of the server commands if they simply pressed TAB in chat. Well, not anymore they won't!
+  With this functionality, players now only see what they really have the permission for.
+  But please make sure you also DISABLE all the commands you don't want your players to use via /aa_disablecommand, such as
+  the /? command (/aa_disablecommand ?). Otherwise - no matter what they'll see with tab-complete, they'll still be able to
+  execute all of those "hidden" commands!
+
+
+
+Version 2.2.1
+=============
+New minor version
+
+Added:
+* commands from permdescriptions.yml (added in version 2.2.0) are now showin in /aa_listcommands as well as /aa_playercommands.
+  This means that when you now have all PlugMan's commands set in permdescriptions.yml, you will finally be able to see them all
+  in the full commands listing of all commands on the server. These commands, their permissions and descriptions are - of course -
+  fully searchable and can be filtered using all /aa_listcommands filters :-)
+  This has to be some breakthrough or something...
+
+Changed:
+* tab-completion for /aa_fixcommand will now offer only relevant plugins to fix a command to
+  (so a tab-complete for ""/aa_fixcommand god" will potentially show you the plugins Essentials and WorldGuard)
+* when tab-completing /aa_fixcommand with the relevant plugin name (for example "/aa_fixcommand god Essentials."),
+  the tab-completion will automatically suggest the valid command name (i.e. "god" instead of telling you whether
+  you want to list all 132 Essentials commands)
+
+
+
+Version 2.2.0
+=============
+New major version
+
+Fixed:
+* the super-fancy "next" and "previous" page arrows in player GUI chat were replaced by simple << and >> characters,
+  as they continued to be garbled by Spigot's own YAML file updater
+
+Added:
+* permdescriptions.yml file can now be used in /aa_playercommands to supplement commands that AA cannot display
+  because a plugin does not disclose their existence. As an example, the old PlugMan has just a single command - /pm - which
+  then uses parameters to perform PlugMan's functions. So, AA cannot tell you that you can do "/pm help" or "/pm info"
+  simply because the plugin will keep it secret even from the server itself. Instead, it will catch all commands starting
+  with "/pm" and process them internally, consequently showing you for example PlugMan's help when you type "/pm help".
+  permdescriptions.yml file was primarily used to supplement permissions and their descriptions for commands where
+  plugins themselves don't provide this information (such as Essentials or PlugMan). Now, you can add your own plugin commands
+  along with their descriptions (please make sure you add permissions, too or commands will not be shown).
+  Following is the format you will need to use for the permdescriptions.yml file. Please note that the command description
+  must always be on the first line in that list of permissions and must start with a Dollar ($) sign.
+  manualPermissions: # this is the first line of permdescriptions.yml, put your plugin name below it
+    plugman:         # this is the plugin name for which commands you want to add, indent it with 2 spaces
+      plugman info:  # this is the plugin command for which description and permissions you will be adding, indent it with 2 spaces again
+      - $Displays information about plugins on your server. # this is the command description, always first, always starts with $
+      - plugman.info=Allow use of the info command.         # this is the permission node for this command - at least one node is required
+      - some.other.perm=If needed.                          # this is another optional permission node for this command
+
+
+
+Version 2.1.1
+=============
+Maintenance version
+
+Fixed:
+* fixing or redirecting a command that is being used with parameters works as intended again
+  (for example, fixing "/tell" to "/minecraft:tell" will take all tell's parameters and add them to minecraft:tell)
+* database config file would put itself with new values into the root folder of your server rather than
+  inside the plugins/AdminAnything folder
+* more IllegalAccessError instances fixed for Minecraft 1.7
+
+Changed:
+* when managing commands shown in /aa_playercommands for your users, you will now also see their all aliases, so you can
+  hide them all from the listing
+
+
+
+Version 2.1.0
+=============
+New major version
+
+Fixed:
+* deleting of old language files when no custom lines found in them now works as intended
+* the previous page and next page arrow character in chat were garbled - they are now back to their original form
+* /aa_listcommands had a previous page arrow always showing in chat, regardless of the page or the actual output
+* several IllegalAccessError instances fixed for Minecraft 1.7
+* fixed a situation when AdminAnything got loaded too soon and would not see all other plugin's commands correctly
+* fixed pagination issue where same command was shown at the end of first page and then again at the beginning of the next one
+* fixed situations when no error message is shown for command when checking for simple permissions (such as aa.checkplayercommands)
+  and the player does not have that permission
+* fixed cached results being displayed on /aa_checkcommandconflicts after running /aa_fixcommand
+
+Changed:
+* the /ap and /rp command aliases for /aa_addperm and /aa_delperm commands (respectively) were removed
+  because they clashed with other plugins
+* /aa_reload will now inform about successful reload of AdminAnything as well as its start
+
+Added:
+* a warning is now shown when trying to run /aa_mutecommand on a 32-bit architecture
+* /aa_info command which will show you everything that has been fixed, muted, disabled etc. by AdminAnything while
+  marking invalid (old, non longer existing) commands, redirects etc. and allowing to remove them via a simple click
+  in the player chat
+* /aa_listcommands has now a new option in config - listCommandsSeparator. This will allow you to change the single-line listing
+  separator between command name, plugin name, description, aliases and permissions. This is to accommodate possible imports
+  into Excel spreadsheeds, as you can now easily create the following output that can be imported as CSV:
+  /aa_listcommands|[AdminAnything]|Lists all loaded commands for all plug-ins.|[/listcommands; /lc]|[aa.listcommands]
+* /aa_playercommands now available for all players with the permission aa.checkplayercommands.own - however, regular players
+  will only see their own commands with descriptions and will not see any plugin or permission information as an OP would
+* /aa_disablehelpcommand and /aa_enablehelpcommand - these 2 commands along with the aa.checkplayercommands.admin permission
+  will allow administrators to fine-tune what exactly their players of different ranks / permission groups will see when using
+  /aa_playercommands themselves. Admins can hide commands from this listing - both globally and per-rank. There is now also
+  a new UI element to /aa_playercommands which allows you to set this up quickly and easily. Just de-op yourself, give yourself
+  the rank you're building help for, give your user the aa.checkplayercommands.admin permission and see what your players will see.
+  Hide everything you like from the chat GUI (or via these 2 new commands), then jump back to your ordinary admin group / op yourself.
+
+
+
+Version 2.0.0
+=============
+New major version
+
+Fixed:
+* /aa_version now checks for a new version via the Spigot API (as was always intended but lost somewhere in the rewrite)
+* version checking now correctly recognizes higher and lower versions (no more messages of the type: "You're running
+  old version - 1.9.6 - but newer version (1.9.5) is available at Spigot.")
+* database configuration did not contain new settings added with newer AA version after an update
+* database config failed to load after being edited via PHPMyAdmin due to non-breaking spaces occurrences in the configuration
+
+Changed:
+* [breaking change] 32-bit Java is no longer supported (at least commands muting will no longer work on 32-bit Java versions, the plugin might but is not tested)
+* [breaking change] plugin compatibility is now from MC 1.7.10+, as it's being compiled against Java 8 which is not supported by earlier MC versions
+* automatic update checks no longer spam console every 2 hours unless there is a new version available
+
+Added:
+* automatic update check interval is now configurable (time is in seconds)
+* new version no longer displays a message about old language files being found but rather copies over changed and new lines
+  from these into the new language file and removes those old files
+
+
+
+Version 1.9.5
+=============
+Maintenance version
+
+Fixed:
+* using AA in player chat works as intended now and no longer generates errors in console
+
+
+
+Version 1.9.4
+=============
+Maintenance version
+
+Fixed:
+* /aa_reload no longer disables custom chat formatting (which was caused by sometimes unintentionally disabling chat listeners of other plugins)
+
+
+
+Version 1.9.3
+=============
+Maintenance version
+
+Fixed:
+* /aa_fixcommand ended with incorrect error message if the second command to fix the first command to was not found
+  in any of the plugins on server
+* /aa_fixcommand was unable to hard-wire commands from plugins back to server's own commands (for example,
+  /aa_fixcommand time minecraft:time would fail)
+
+Updated:
+* when the "permdesc" or "usage" filter is used with /aa_listcommands but multiline argument is missing,
+  a warning about not showing these values in simple mode is added to the beginning and the end of listing
+  ... also apologies for leaving the "showpermissiondescriptions" set to "true" in the config file :-/
+  ... you might want to change that configuration and do /aa_reload to prevent the new message from showing
+      if you're using the default config
+
+
+
+Version 1.9.2
+=============
+Maintenance version
+
+Fixed:
+* command redirects when using console work as expected (previously it didn't work with parametrized commands, so
+  redirecting "say" to "me" and typing "say hello" in console would not redirect)
+* command redirects work with parametrized commands to redirect to (adding a redirect failed if you used
+  /aa_redirect say "me works")
+* commands disabling for WorldEdit's special commands (//sel, etc.) now works correctly
+
+
+
+Version 1.9.1
+=============
+Maintenance version
+
+Fixed:
+* PaperSpigot muting for versions 1.13+
+
+
+
+Version 1.9.0
+=============
+New major version
+
+Fixed:
+* compatibility with Spigot versions 1.14.4 and 1.15.1
+* all AA commands work for commands without parameters again
+* the initial blocking update check for AdminAnything was replaced by one that does not pause the server until
+  AA gets response back from Spigot
+* default listing options for /aa_listcommands in the config file are no longer ignored
+* /aa_pluginperms now lists descriptions from the internal permissions file correctly (without an initial "=" sign)
+
+Added:
+* AA configuration now supports MySQL databases. This means that you can share your AA config among multiple servers
+  without the need to manually rewrite all config.yml files and do an /aa_reload on each of these servers afterwards.
+  File-based configuration is still supported, so you can choose which one to use.
+* Some rules when upgrading AA version:
+  - plugin's config.yml file now only contains a single option: configBackend (set to "file" for file-based, "db"
+    for db-based configs)
+  - plugin's normal (file-based) configuration file is renamed to config-file.yml
+  - if you want to use db-based configuration, set "configBackend" in the config.yml file to "db" and update your
+    config-db.yml file with your connection settings
+  - db-based config is basically a YAML file representation in the database, so you're free to edit it there and all
+    instances of AdminAnything will pick it up every sync_check_interval_seconds seconds (option in config-db.yml)
+  - all existing configs are automatically inserted into the database upon first run with db-based configuration enabled
+  - you can update your config-db.yml and config.yml and simply do /aa_reload for all this to work, there's no need to
+    restart your server
+
+
+
+Version 1.8.3
+=============
+Maintenance version
+
+Fixed:
+* permission descriptions for Essentials VS EssentialsX
+
+
+
+Version 1.8.2
+=============
+Maintenance version
+
+Fixed:
+* tab completion caused console errors when trying to tab-complete list of plugins
+
+
+
+Version 1.8.1
+=============
+Maintenance version
+
+Added:
+* tab completion for /aa_listcommands
+
+
+
+Version 1.8.0
+=============
+New major version
+
+Fixed:
+* languages with apostrophes will have these displayed correctly from the language file (they were doubled /''/ before)
+* chat nick click actions functionality now works as intended when enabled without ProtocolLib
+* commands muting didn't work since the 1.7.0 rewrite, so it's back :)
+
+Added:
+* tab completion for every AA command, except for /aa_listcommands (that one will take a bit more time coding due to all
+  possible filtering options and their combinations)
+
+
+
+Version 1.7.3
+=============
+Maintenance version
+
+Fixed:
+* errors were appearing in console when debug mode was enabled and /aa_reload was being run
+* apostrophes in language file caused text not to appear and translate correctly
+* /aa_listcommands failed with an exception when the "perm" parameter for showing permission was present
+  and no permissions for a command in the custom permissions dictionary were found
+
+
+
+Version 1.7.2
+=============
+New major version.
+
+Fixed:
+* statistical data are being sent to bStats with correct keys now
+* configuration enabling/disabling option added for /aa_debug
+
+Added:
+* translations!
+
+
+Version 1.7.1
+=============
+New major version.
+
+Fixed:
+* /aa_mutecommand could attempt to modify server classes twice when ran for the first time after a server restart
+  and there are some commands muted already
+* /aa_addperm did not show confirmation message on successfull permission creation
+* /aa_addperm did not check for existence of the command we are adding permissions for
+* /aa_addredirect did not check for existence of commands
+* /aa_fixcommand and /aa_addredirect correctly add commands to override/redirect when these commands are provided with
+  strange letter case (for example: /aa_addredirect God help -> will actually redirect "god" to "help", not "God" to "help").
+* removed forgotten debug lines from AdminAnything's output
+
+Added:
+* missing features added to the configuration, so you can enabled/disable them as all the others. Added were config options
+  for /aa_actions, /aa_reload and /aa_version commands.
+* new configuration section "banIpCommands" was added that holds list of all commands used on the server to IP-ban players.
+  This is used when the "kick after IP-ban" feature is enabled, so AdminAnything knows after which command(s) to kick a player
+  out.
+* on old servers (prior to Minecaft 1.6), all of the clickable chat link features will be auto-disabled on first run
+  to prevent showing unnecessary warning messages, since these features will never work there
+* new configuration section "pluginsWithFullWriteAccessViaAPI" with an appropriate enabling config option "apifullaccess" was added
+  (set to false by default, i.e. disabled). What this does is it allows other plugins to access custom events of AdminAnything
+  that are used to update lists of fixed, muted, disabled... commands. In other words - when this is enabled,
+  other plugins that you allow in this config section will have the ability to alter AdminAnything's fixed, muted, disabled...
+  commands completely. Use with care and only when strictly necessary. Always consider what this can cause to the stability
+  of AdminAnything and subsequently your server if a plugin's author asks you to add their plugin into this list.
+
+Updated:
+
+* the second parameter of /aa_fixcommand can now be the plugin name itself - no need to write the full "PluginName.commandName"
+  crap if we know we're fixing "god" to "Essentials:god"
+  Example: /aa_fixcommand god Essentials -> this now is the same writing "/aa_fixcommand god Essentials.god"
+
+
+
+Version 1.7.0
+=============
+New major version.
+
+Fixed:
+* /aa_listcommands no longer eats up all chat space when a plugin description is too big (such as is the case with PermissionsEx)
+* /aa_playercommands and /aa_pluginperms did not show additional permissions from the internal manually-crafted permissions file
+  which contains permissions of popular plugins that somehow forgot to add them to their plugin.yml description file
+
+Added:
+* /aa_pluginperms can be used to search for permissions for the given plugin in the same way /aa_playerperms works
+  Example: /aa_pluginperms essentials -> will list all permissions for Essentials
+           /aa_pluginperms essentials tp -> will list all permissions for Essentials that have "tp" in their name
+
+
+
+Version 1.6.1
+==============
+New maintenance version.
+
+Fixed:
+* /aa_fixcommand works properly again when a core command hijacked by a plugin (ban, pardon, say...) needs to be fixed back to the core command
+  (minecraft:ban, minecraft:pardon ...)
+* /aa_fixcommand will list all usable plugins when a player tries to use "Core" as plugin to hard-wire a command to.
+  Example: /aa_ficxommand ban Core:ban -> will show list of plugins that can be used (i.e. Essentials, minecraft), so you can rewrite that to:
+           /aa_fixcommand ban minecraft:ban
+* /aa_addredirect will now correctly display an error message when the second argument is missing
+
+Updated:
+* updater now checks the new, officially supported Spigot API URL to determine new AdminAnything version availability
+
+Added:
+* /aa_fixcommand with a single parameter (i.e. /aa_fixcommand ban) will now show clickable list of plugins to which that command can be hard-wired,
+  so you can do that by simply clicking the right plugin in chat. This is also the case if "Core" was used as a command (see fix #2 above).
+
+Updated:
+* MCStats - the long-used Minecraft statistical server, which is now very much dead - was replaced by the brand-new BStats metrics and statistics 
+  project (https://bstats.org). It's been running for a while and the WorldEditSelectionVisualizer (which I also maintain) has used it without problems
+  so far, so I think the time for change has arrived.
+
+
+
+Version 1.6.0
+==============
+New major version.
+
+Fixed:
+* /aa_listcommands now shows all Core commands for versions prior to 1.7 (they don't get registered the usual way, bah)
+* as promised in version 1.55, nick click actions (including PLAYER LEAVE ones :-P ) are now customizable... sorry to only cater for join messages before!
+  ... with this update, the config changes slightly in that it now contains a "type" value for each command - this can be either "join" or "leave", depending 
+  on when you want that action to be displayed in chat. config section in the description page was also updated to reflect these latest changes now
+* when nick click actions in chat are enabled and ProtocolLib is missing, AA will also display this information on each /aa_reload now
+* in MC version 1.12, a new part was added to the server code that could be sending messages to players and was not being muted via /aa_mutecommand until now.
+  that's now fixed and no more leaked messages for muted commands will occur anymore :)
+
+
+Updated:
+* versioning has changed to a more concise format. The first number (1) will outline a major version with possible breaking changes and incompatibilities 
+  with previous versions. The second number (6) marks a version with big new features added in. The last number (0) will outline maintenance versions
+  (mostly bugfixes, but sometimes also small features).
+* plugin size :-)
+  ... I'm actually working on some refactoring (i.e. refurbishing of the insights), so the code is more readable and easier to build upon. This is the first 
+  such update which removed a whooping 200kb of code. Cleanup time everyone! :)
+
+Added:
+* AdminAnything is now compatible with Bukkit server versions from 1.2.5 onwards. Since a LOT of people still tend to play these old versions AA will 
+  continue in the good spirit of backwards MC compatibility and now starts supporting MC 1.2.5 and higher. Hooray!
+  (I actually tried to push it as low as 1.0... but CraftBukkit wasn't really ready for us yet in 2011 and using it was kinda programming creative nightmare)
+
+
+
+Version 1.57
+=============
+New maintenance version.
+
+Fixed:
+* /aa_listcommands failed to recognize "minecraft" as a valid plugin and thus refused to list built-in commands 
+  when run as "/aa_listcommands plugin:minecraft"
+* /aa_listcommands did not list all core commands (spigot, craftbukkit, minecraft) when "core" was used in plugin name search
+  (i.e. "/aa_listcommands plugin:core")
+* new commands added after 1.8 versions, such as /advancement, /locate, /recipe, /teleport and others are now properly recognized
+  as internal server commands
+
+
+
+Version 1.56
+=============
+New maintenance version.
+
+Fixed:
+* /aa_addredirect no longer causes errors when quotes are used for commands without parameters (such as /aa_redirect "command" "redirect_here")
+* /aa_playerperms no longer disconnects player who entered the command when the target player has a huge permissions list
+
+
+
+Version 1.55
+=============
+New major version.
+
+Added:
+* new /aa_pluginperms command added that lists all permissions for a given plugin (along with their descriptions). As a result, "pp" and "perms" aliases 
+  were removed from AA to prevent ambiguity.
+* nick click actions in chat (the clickable [A]) can now be customized. You can now set up multiple letters, words, smileys or whatever else your mind 
+  can create. Those can be custom-colored and each can have its own command assigned. If you already used the [A] action, this will be preserved upon 
+  config upgrade in this version. Also, 2 new options will be added when this version runs for the first time - [C] and [P] to list player's accessible 
+  commands and permissions, respectively.
+* join and leave chat actions are now customizable the same way as nick click actions
+
+Updated:
+* format of join and leave chat action links was slightly updated, so actions are now visibly divided by a comma as well as color
+
+Fixed:
+* the command in "Ban Ip" chat link action was set to "banip" which didn't work with latest Spigot versions. It's been corrected to "ban-ip".
+
+
+
+Version 1.54a
+=============
+New maintenance version.
+
+Fixed:
+* clicking on plugin name next to a command in the chat UI now correctly keeps selected filters 
+  (i.e. show aliases, show descriptions, multiline output...)
+* AA no longer shows an error in console when a player issues invalid command (such as "/" or "/ ")
+
+
+
+Version 1.54
+=============
+New major version.
+
+Added:
+* support for 1.12 version of Minecraft server
+* /aa_addperm command now uses a configuration option "playerpermscaseinsensitive". This turns on ignoring letter case in command parameters
+  given by a player. This way, adding a virtual permission for "/kit starter" command will also add that permission to "/kit Starter",
+  "/kit STArTer" and other variants of the same parameter.
+* to see help page with options for /aa_listcommands, you can now type "/aa_listcommands ?" as well as "/aa_listcommands help"
+
+Fixed:
+* added React compatibility for chat nick click action (the action that's performed when you click on the blue [A] before a nickname)
+  ... this also adds compatibility for other plugins that use chat packets in a hackish way to display text in the Minecraft client which don't adhere 
+      to the (JSON) specifications for those chat packets
+* updated code to not use any more deprecated server functionality
+
+
+
+Version 1.53
+=============
+New maintenance version.
+
+Added:
+* new /aa_debug command added to operatively (i.e. upon calling this command) enable/disable debug mode. 
+  This mode can be used to provide more information to the plugin author when needed (for example when something in the plugin breaks).
+  There is also a "debug" config option to turn this mode on/off by default upon plugin load.
+
+Fixed:
+* /aa_checkcommandconflicts now works with the latest version of AsyncWorldEdit
+* /aa_checkcommandconflicts will now correctly show conflicting commands for WorldEdit when other plugins (namely AWE) are extending its functionality
+
+
+
+Version 1.52a
+=============
+New maintenance version.
+
+Fixed:
+* restored working chat state for Minecraft 1.6 versions
+
+
+
+Version 1.52
+=============
+New maintenance version.
+
+Fixed:
+* added compatibility for Minecraft 1.10, where fancy chat messages in-game broke chat
+
+
+
+Version 1.51
+=============
+New maintenance version.
+
+Fixed:
+* commands that do not get prefixed by their plugin name or can't be otherwise found in any other rational way
+  should now being correctly recognised by AdminAnything by using a little brute force on finding out their origin :P
+
+
+
+Version 1.5
+=============
+New major version.
+
+Added:
+* /aa_mutecommand can now mute sub-commands
+  Example: /aa_mutecommand "say ahoj" -> this will mute "/say ahoj" but will not mute "say hello" or any other parameter to the /say command
+  IMPORTANT: this functionality is greedy by default, meaning that muting "say hello" will also mute "say hello mum", "say hello dolly" 
+  and anything else that follows the "say hello" command. This is to accommodate commands with player names, world names, etc. as parameters.
+  For example doing '/aa_mutecommand "minigame kick"' and executing "/minigame kick player1" may prevent displaying 
+  message about a kicked-out abusive player from game for everyone in the game and help players concentrate 
+  on the game itself.
+
+
+
+Version 1.40
+=============
+New major version.
+
+Added:
+* /aa_addredirect command was added to AdminAnything which allows to redirect one command to another
+  Example: /aa_redirect shop "warp shop" -> whenever a player does "/shop", "/warp shop" will be executed instead
+
+
+
+Version 1.39
+=============
+Maintenance version.
+
+Fixed:
+* muting commands that start on double-slash (such as WorldEdit's //setbiome) now works correctly
+* when muting a command and this command could not be found on the server, a warning is displayed (there was no message before)
+
+
+
+Version 1.38
+=============
+New minor version.
+
+Added:
+* kick-after-ban feature usage added to Metrics
+* a "Full Info" link added to the list of available actions for a command in chat GUI when you click on one.
+  It will bring up a full-blown multiline output of the command, including its plugin, aliases, usage and permissions.
+* added Vault support (which fixes issue with invalid permissions and commands being shown for player via aa_playerperms & aa_playercommands)
+
+Fixed:
+* invalid permissions in aa_playerperms & aa_playercommands are no longer shown in the output
+
+
+
+Version 1.37
+=============
+New minor version.
+
+Added:
+* a clickable "undo" action text added to player chat where an action can be undone
+  (such as disabling, muting and fixing commands, adding permissions... MC 1.7+)
+* added an option to auto-kick a player from the server after an ip-ban (item chatKickAfterIpBan in the config.yml file)
+
+
+
+Version 1.36
+=============
+New minor version.
+
+Updated:
+* because the click-on-nick functionality, where you can click on a nickname in chat to perform action set up in
+  AdminAnything configuration, has the potential to break other chat plugins, it has been updated to optionally 
+  use ProtocolLib. This allows for adjusting the chat line sent to the client instead of rewriting it completely.
+  If you don't have ProtocolLib and this feature is not conflicting with your chat plugins, you will still be able
+  to use it as you did before, although an informational warning will be generated when the feature is enabled.
+  Remember, you can always switch this feature off in the config.yml file if you don't need it or don't want to
+  use ProtocolLib on your server via the "features.chatnicklinks.enabled" setting.
+
+
+
+Version 1.35b
+=============
+Maintenance version.
+
+Fixed:
+* /aa_version no longer generates an error when run from the in-game chat
+* updated alghorytm for finding plugin of installed commands (prevents errors when a command starts on a colon, for example :morning)
+
+
+
+Version 1.35a
+=============
+Maintenance version.
+
+Fixed:
+* filter options for /aa_listcommands fixed (aliases can now be turned off again)
+* filtering by plugin works again
+* search filter now correctly searches for words in command descriptions when a wildcard is used
+* /aa_listcommands and /aa_fixcommand once again show core commands with their origin (i.e. "Core - minecraft:help" instead of just "Core")
+* removed a "test123" debug message from /aa_addperm
+* fixed /aa_ignorecommand and /aa_unignorecommand, so that /aa_checkcommandconflicts now correctly recognises ignored commands
+* /aa_playerperms now correctly hides permissions for OPs
+
+
+
+Version 1.35
+============
+New minor version.
+
+Added:
+* /aa_version command which shows AdminAnything version as well as checks for a new version online, if enabled
+
+Updated:
+* automatic updates checker now runs every 2 hours as opposed to only at server startup (for server that are always on) and they can also be disabled in the config
+
+Fixed:
+* custom metrics name adjusted for player join&leave events (mcstats didn't like the slash in it)
+* /aa_addperm now once again works correctly for event-based commands (like /ping from CheckMyInventory)
+* /aa_addperm fixed for cases when command line argument started with a slash to accommodate special commands, such as //cut (i.e. "/aa_addperm test /cut")
+* fixed a very uncommon situation where fixed and disabled commands may have been still run by the server randomly
+* a lot of code cleanup, mostly to remove duplication but also to speed up certain tasks by adding caches and co.
+
+
+
+Version 1.34
+============
+Maintenance version.
+
+Added:
+* added a bunch of new metrics to show what features of AdminAnything are being used by servers
+
+Fixed:
+* reloading configuration of AdminAnything now works properly
+* default configuration name for /aa_ignorecommand fixed
+* enabling and disabling of features via config now works correctly for all features
+* the "search" option no longer appears in /aa_listcommands listing when running from console
+* search filter option explanation added to the "/aa_listcommands ?" help menu
+* the "Downloading javassist library into the 'lib' folder..." message now only appears in player chat if the library is actually really being downloaded
+* fixed disabled commands getting re-enabled on AdminAnything config file reload
+
+
+
+Version 1.33
+============
+New minor version.
+
+New features:
+* added automatic update check during AdminAnything load time
+* added click actions (kick, ban, banip, unban, unbanip) for player joins and leaves (MC 1.7 and above)
+
+
+
+Version 1.32
+============
+New minor version.
+
+New features:
+* search for commands and in descriptions is now streamlined. You can now simply use "search:copy" in /aa_listcommands
+  and it will bring up both, commands that contain the word "copy" in description and in the command itself (for example //copy)
+  ... you can also use wildcards in search now (using "search:copy*" will for example bring up "/copyme" and commands that contain "copying" in their description)
+* added option to perform arbitrary action when a person (with the right permission) clicks on a nick in chat (MC 1.7+)
+
+
+
+Version 1.31
+============
+New minor version.
+
+New features:
+* pagination arrows added to player commands and permissions listing
+* filtering options added to the top of /aa_listcommand listing
+* search functionality in /aa_listcommands now also searches for command name in addition to command descriptions
+
+Fixed:
+* pagination fixed for the "previous page" arrow
+* pagination arrows hidden when using server version < 1.7
+* /aa_playerperms command no longer confuses pagination parameter for a search term (pagination must, however come as the LAST parameter)
+* WorldEdit commands (starting with //) can now be searched for by using either "cmd:/cut" or "cmd://cut" filter option
+* fixed sending out text for server 1.6 versions
+
+
+
+Version 1.30
+============
+New major version.
+
+New features:
+* added the possibility to click on commands and plugins in chat when using AdminAnything commands (Minecraft 1.7+)
+
+Fixed:
+* muting a command from chat for the first time will show the "downloading javassist library" message in chat as well
+  (was only shown in the console, so players would think the command didn't work)
+
+
+
+Version 1.24b
+============
+Maintenance version.
+
+Fixed:
+* /aa_addperm now correctly works for multi-level permissions (such as make.this.work)
+
+
+
+Version 1.24a
+============
+Maintenance version.
+
+Updated:
+* since /aa_mutecommand is a very case-specific command and does adjust core server functionality,
+  these adjustments will only be done when at least one command is actually muted (these changes were performed on every
+  load of AdminAnything, which could have been counter-productive for servers which did not need this functionality)
+
+Fixed:
+* AdminAnything no longer breaks timings pasting functionality
+
+
+
+Version 1.24
+============
+New minor version.
+
+New features:
+* it's now possible to display permissions that contain a certain text
+  example: /aa_playerperms player1 fly -> this will bring up all permission nodes for player1 with the text "fly" contained in them
+
+
+
+Version 1.23
+============
+New minor version.
+
+New features:
+* you can now set defaults for the /aa_listcommands listing in AdminAnything's config file
+  (so if you want to see aliases, descriptions but no permissions by default when you run the command, you are now able to set this up)
+* added the possibility to filter output of /aa_listcommands by searching in command descriptions
+  example: /aa_listcomands search:"highest block" -> will come up with Essentials' own /top command as a result
+  
+Fixed:
+* muting vanilla commands will be disabled in case of AdminAnything fails to adjust CraftBukkit and Minecraft during its load time (it just threw an error message until now and stopped working, as this is not supported by CraftBukkit builds)
+
+
+
+Version 1.22
+============
+New minor version.
+
+New features:
+* added the possibility to disable specific functionality (commands) of AdminAnything in its config file.
+  There was a single case where AdminAnything could have been a cause for server freeze. I suspect this might have something to do with adjusting
+  Minecraft's and CraftBukkit's classes at runtime for the purposes of muting commands on your server (otherwise I can't explain such a freeze via AA).
+  Should you experience anything like this on your server or you simply don't need one of the features that come with AdminAnything, you can now disable them
+  in the config.yml file in AdminAnything's config folder (plugins/AdminAnything/config.yml)
+
+
+
+Version 1.21
+============
+New minor version.
+
+New features:
+* added the possibility to allowing players to bypass disabled commands and allow them to still run those, if they have sufficient permissions.
+  Permissions "aa.bypassdeletecommand", "aa.bypassdeletecommand.any" or "aa.bypassdeletecommand.[command_name]" can be used, where "[command_name]" if the actual command you want the player to have access to
+* added /aa_addperm and /aa_delperm commands to allow for virtual permissions adding. Using these commands, you will be able to create permission
+  for any command on your server, including its parameters and disable access to anyone who won't have this permission. For example, you can stop
+  people from executing "/help 2" unless they have a "help.special" permission. Please note that all newly-added virtual permissions are restrictive
+  by default, meaning a player will have to have that permission assigned to access the command for it.
+
+Fixed:
+* commands fixed via /aa_fixcommand now have their PlayerCommandPreprocessEvent priority changed correctly on AdminAnything startup, so they don't accidentally use that event before AdminAnything can
+* routine to change the priority of PlayerCommandPreprocessEvent on AdminAnything start was optimized, so it doesn't try to adjust priority of the same command multiple times (i.e. a command found in 2 of the fixed, disabled and muted lists)
+* trying to fix a command that was already fixed will now show an error message
+
+
+
+Version 1.2b
+============
+Maintenance version.
+
+Fixed:
+* reverted PaperSpigot's paperclip.jar fix, as it could have had unforseen consequences (and wouldn't still fix PaperSpigot running via paperclip.jar in some instances)
+* fixed a rare ClassNotFound exception related to commands muting
+
+
+
+Version 1.2a
+============
+Maintenance version.
+
+Fixed:
+* fixed /aa_mutecommand for PaperSpigot started via paperclip.jar instead of using the real client JAR file to start
+* fixed NullPointer exceptions when requested page in any pagination was <= 0
+* added pagination to /aa_playerperms, so it won't generate a "text too long" exceptions when too many permissions are assigned to a player
+
+
+
+Version 1.2
+============
+New major version.
+
+New features:
+* /aa_fixcommand and /aa_disablecommand now also work for plugins that use event listeners to register their commands as opposed to the standard CommandMap registration, which was ignoring our command cancellation method
+  an example of such plugin would be CheckMyInventory (in its older versions) which ignored command cancellation for the /ping command and always displayed the ping time
+* added /aa_mutecommand and /aa_unmutecommand to mute output of your commands (i.e. the command will still do its job but nobody will see any message in case it will try to send one)
+  PLEASE NOTE that this functionality is somewhat experimental, since it involves hacking both CraftBukkit and Minecraft server while it is actually running (all modifications are done in memory, your JAR files remain intact).
+  Although highly unlikely, it might be incompatible with custom CB, Spigot, PaperSpigot and other builds that modify any of the "sendMessage()" methods found thorough CB and MC code.
+  Please send any errors this plugin might generate as a consequence, so I can fix them promptly :)
+* ability to fix, disable or mute commands of AdminAnything itself was disabled, as it could lead to inability to revert these changes in-game
+  (i.e. if you disabled /aa_reload and /aa_unfixcommand, you wouldn't have a way to restore fixed commands without editing the config file manually and restarting the server)
+* added /aa_playerperms which will list all permissions of a currently online player and group them by first permission prefixes (i.e. aa.* permissions will be displayed together as well as towny.* ones and factions.* ones etc.)
+* added /aa_playercommands which will list all commands available for the given online player
+* added permission descriptions for WorldEdit and WorldGuard plugins
+* added /aa_ignorecommand and /aa_unignorecommand to add conflicting commands into an ignore list, so you won't see them in the output of /aa_checkcommandconflicts output.
+  This can be cases when a plugin on your server is already overriding other plugins for a certain command (let's say /ping), so the wanted functionality is there.
+  However, even in such case, AdminAnything will still list those commands as conflicting.
+  By using /aa_ignorecommand, you will be able to suppress these commands from showing up in the list of conflicts.
+
+Fixed:
+* moved /aa_fixcommand code to its own thread, so it will not potentially lag the server if many plugins are installed
+* fixed output /aa_disablecommand, /aa_enablecommand & /aa_unfixcommand for instances when the same command was given as a parameter multiple times
+* fixed /aa_disablecommand for 1.6 server versions
+* fixed incorrect permission check for permissions essentials.tpdeny and essentials.kit.others
+* removed /cc alias for the /aa_clearchat command - I didn't realize it's so close to /ccc (/aa_checkcommandconflicts)
+
+Possible breaking change:
+* all permission nodes changed to lowercase (i.e. clearChat changed to clearchat)
+
+
+
+Version 1.1
+============
+New major version.
+
+New features:
+* case sensitivity does not matter anymore when filtering commands by plugins
+  example: /aa_listcommands plugin:Essentials = /aa_listcommands plugin:eSSenTiaLs
+* new multiline experimental output added that can be turned on by using "multiline:yes" filter
+  example: /aa_listcommands multiline:yes
+* permissions can now be shown in commands listing where provided. Please note that some plugins
+  will not provide permission information in their plugin description file.
+  For some of these, I'll be providing permissions manually directly in AdminAnything with the help 
+  of these plugins' websites and Wikis.
+  There is also an option to turn permission descriptions on/off in the new multiline listing if it's making your chat/console too crowded.
+  example1: /aa_listcommands permissions:yes
+  example2: /aa_listcommands permissions:yes permdescriptions:no
+* added the possibility to use "yes", "y", "true" or "no", "n", "false" in filters (i.e. alias:yes, alias:y, alias:true)
+* new filter to show command usage in the listing - "usage"
+  example: /aa_listcommands usage:yes
+* new filter to show only a single command in the listing - "command"
+  ... you can use an asterisk (*) at the beginning or at the end as a wildcard
+  example1: /aa_listcommands command:ban - will only match the command "ban"
+  example2: /aa_listcommands command:ban* - will match commands like "ban", "bank", "ban-ip"
+  example3: /aa_listcommands command:*ban - will match commands like "ban", "unban", "deban"
+  example4: /aa_listcommands command:*ban* - will match commands like "ban", "unban", "deban", "bank", "ban-ip"
+* added /aa_clearchat commands that will basically add 120 empty lines, effectively clearing up player chat or making space in the console
+
+Fixed:
+* removed a forgotten debug line that was spamming console when /aa_fixcommand was used
+* commands fixed via /aa_fixcommand no longer display the "Fixed" message in /aa_listcommands for the same plugin they are hard-wired to
+* fixed error in /aa_listcommands when a plugin did not contain any command
+
+
+
+Version 1.0g
+============
+Maintenance version.
+
+Fixed:
+* added Java 7 support 
+
+
+
+Version 1.0f
+============
+New minor version.
+
+New features:
+* commands disabled via /aa_disablecommand will no longer appear as conflicting in the /aa_checkcommandconflicts listing
+* commands fixed via /aa_fixcommand or disabled via /aa_disablecommand will no longer appear as overriding default functionality in the /aa_checkcommandconflicts listing
+* /aa_enablecommand will now list all disabled commands when used without a parameter
+* /aa_unfixcommand will now list all fixed commands when used without a parameter
+* both, /aa_unfixcommand and /aa_enablecommand will now allow to unfix/enable multiple commands as once
+  example: /aa_unfixcommand ban op clear -> this will unfix commands ban, op and clear
+* /aa_disablecommand will now also accept multiple commands to be disabled at once
+  example: /aa_disablecommand ban op clear -> this will disable commands ban, op and clear
+
+Fixed:
+* fixed incorrect plugins being sometimes displayed for commands in /aa_fixcommand, /aa_listcommands and /aa_checkcommandconflicts
+  (WorldEdit and WorldGuard got mixed up mostly)
+  ... this also optimized the routine by which these were being retrieved, resulting in performance improvement
+* fixed error in the console that appeared when the system incidentally did not contain any errors or conflicts
+* fixed situations when plugins would register commands that start on colon (for example /:ping)
+
+
+
+Version 1.0e
+============
+New minor version.
+
+New features:
+* added help for /aa_listcommands, accessible via /aa_listcommands ?
+
+Fixed:
+* fixed incorrect handling of commands hard-wired to their core functionality (for example Essentials:ban rewired back to the original Minecraft:ban)
+
+
+
+Version 1.0d
+============
+Maintenance version
+
+Fixed:
+* fixed an exception that was thrown when a commands run began with a space
+* fixed commands parsing error, where 1-letter commands would register as invalid and were always cancelled
+
+
+
+Version 1.0c
+============
+New minor version.
+
+New features:
+* added the possibility to use exclusions and multiple plugins in the "plugin" filter for /aa_listcommands
+  To show only commands from Essentials and mcMMO do /aa_listcommands plug:Essentials,mcMMO
+  To hide commands from Essentials in the listing do /aa_listcommands plug:-Essentials
+* the ability to use simple page number in /aa_listcommands was restored, making the following possible again:
+  /aa_listcommands 2 -> will display second page of commands listing
+
+Updates to functionality:
+* maximum commands per page for console listing lowered from 150 to 100 due to unpredictable results when too much text gets displayed
+* aliases are now being hidden by default in /aa_listcommands listing to save some space and give out less clutter
+
+
+
+Version 1.0b
+============
+New minor version.
+
+New features:
+* added the possibility to use filters in /aa_listcommands.
+  To show only commands from Essentials without their descriptions do /aa_listcommands plug:Essentials desc:no
+  You can use the following set of filters:
+  - page OR pg
+  - plugin OR plug OR pl
+  - showdescriptions OR showdescription OR description OR desc
+  - showaliases OR aliases OR al
+
+
+
+Version 1.0a
+============
+Maintenance version.
+
+Fixed:
+* you can now hard-wire commands to their original core counterparts (for example /ban handled by Essentials can be hard-wired back to original Minecraft /ban command)
+
+New features:
+* added MCStats metrics
+
+
+
+Version 1.0
+===========
+Initial version. Features:
+
+* /aa_checkcommandconflicts will check for conflicts in command and aliases on your server
+* /aa_fixcommand will allow you to hard-wire conflicting command to the exact plugin you want to handle it (for example /tree to Essentials:tree instead of WorldEdit:tree)
+* /aa_unfixcommand will restore the hard-wired command back to its original (conflicting) state
+* /aa_listcommands will list all commands and their aliases on the server
+* /aa_disablecommand will disable a command on your server from ever being executed
+* /aa_enablecommand will re-enable a command that was disabled by the previous command
+* /aa_reload will reload config files for AdminAnything (allowing external changes)

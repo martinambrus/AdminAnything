@@ -1,0 +1,35 @@
+- Wiki examples
+- papi placeholders listing per plugin
+- papi support
+- think of adding search for aliases to the search parameter in /lc
+- allow addredirect to do:
+Example: /arm addmember %player%
+To : /house addfriend %player% 
+- make it that you can do more with the chest gui. add slot numbers so i can arrange the icons a bit. Categories would be useful, so i can make a "ban" categorie with the diffrent bans for diffrent actions. And that i can change the description. So it not only says it runs commany XY
+- test suite, so AA can be easily tested on test servers directly with new MC versions
+
+
+... JS console code to extract CMI base commands and perms from https://www.zrips.net/cmi/permissions/:
+var out = ""; jQuery("section[data-id=34e2] div.elementor-widget-text-editor > div.elementor-widget-container > ul > li").each(function() {
+  var $e = jQuery(this), $subul = $e.find("ul"), subtxt = "";
+  $subul.find("li").each(function() {
+    var txt = jQuery(this).text();
+    //console.log(txt);
+    subtxt += "\n    - " + (txt.indexOf(' -> ') > -1 ? txt.substring( 0, txt.indexOf(' ->') ) : txt);
+  });
+
+  //console.log($e.text());
+  $subul.remove();
+  //console.log($e.text());
+  var txt_inner = $e.text();
+  //console.log(txt_inner);
+  //console.log(subtxt);
+  out += '    cmi ' + txt_inner.substring( 0, txt_inner.indexOf(' -> ') ) + ":\n    - $" + txt_inner.substring( txt_inner.indexOf(' -> ') + 4 ) + subtxt + "\n";
+  $e.remove();
+}); console.log(out);
+
+... JS console code to extract additional CMI perms from https://www.zrips.net/cmi/permissions/:
+var out = ""; jQuery("div[data-id=3b30] div.elementor-text-editor > ul > li").each(function() {
+  var txt_inner = jQuery(this).text();
+  out += "\n    - " + txt_inner.substring( 0, txt_inner.indexOf(' – ') ) + "=" + txt_inner.substring( txt_inner.indexOf(' – ') + 3 );
+}); console.log(out);

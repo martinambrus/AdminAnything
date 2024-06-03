@@ -1,0 +1,153 @@
+features:
+  actions:
+    enabled: true
+  addperm:
+    enabled: true
+    linked:
+    - delperm
+  apifullaccess:
+    enabled: false
+  autoupdate:
+    enabled: true
+  checkcommandconflicts:
+    enabled: true
+  clearchat:
+    enabled: true
+  chatnickgui:
+    enabled: true
+  chatnickguicommand:
+    enabled: true
+  chatnicklinks:
+    enabled: true
+  chatjoinleaveclicks:
+    enabled: true
+  debug:
+    enabled: false
+  disablecommand:
+    enabled: true
+    linked:
+    - enablecommand
+  disablehelpcommand:
+    enabled: true
+    linked:
+      - enablehelpcommand
+  fixcommand:
+    enabled: true
+    linked:
+    - unfixcommand
+  info:
+    enabled: true
+  ignorecommand:
+    enabled: true
+    linked:
+    - unignorecommand
+  listcommands:
+    enabled: true
+  mutecommand:
+    enabled: true
+    linked:
+    - unmutecommand
+  playercommands:
+    enabled: true
+  playerperms:
+    enabled: true
+  playerpermscaseinsensitive:
+    enabled: true
+  pluginperms:
+    enabled: true
+  redirectcommand:
+    enabled: true
+    linked:
+    - remredirect
+  reload:
+    enabled: true
+  tabcompletedisable:
+    enabled: true
+  version:
+    enabled: true
+listcommandsDefaults:
+  showdescriptions: true
+  showaliases: false
+  showpermissions: false
+  showpermissiondescriptions: false
+  showusage: false
+  multiline: false
+listCommandsSeparator: " "
+chatNickClickActions:
+  C:
+    color: aqua
+    command: "/aa_playercommands %PLAYER%"
+    permission: "aa.playerperms.nickclick1"
+  P:
+    color: light_purple
+    command: "/aa_playerperms %PLAYER%"
+    permission: "aa.playerperms.nickclick2"
+chatJoinLeaveActions:
+  Kick:
+    color: aqua
+    command: "/kick %PLAYER%"
+    type: join
+  Ban:
+    color: red
+    command: "/ban %PLAYER%"
+    type: join
+  BanIP:
+    color: dark_red
+    command: "/ban-ip %PLAYER%"
+    type: join
+  UnBan:
+    color: green
+    command: "/pardon %PLAYER%"
+    type: leave
+  UnBanIP:
+    color: dark_green
+    command: "/pardon-ip %PLAYER%"
+    type: leave
+chatNickGUI:
+  mute:
+    item: barrier
+    title: "Mute %PLAYER%"
+    command: "/mute %PLAYER%"
+    permission: "aa.gui.mute"
+  freeze:
+    item: ice
+    title: "Freeze %PLAYER%"
+    command: "/freeze %PLAYER%"
+    permission: "aa.gui.freeze"
+  kick:
+    item: birch_door_item
+    title: "Kick %PLAYER%"
+    command: "/kick %PLAYER%"
+    permission: "aa.gui.kick"
+  ban:
+    item: soul_campfire
+    title: "Ban %PLAYER%"
+    command: "/ban %PLAYER%"
+    permission: "aa.gui.ban"
+  banip:
+    item: campfire
+    title: "IP-Ban %PLAYER%"
+    command: "/banip %PLAYER%"
+    permission: "aa.gui.banip"
+  unban:
+    item: slime_ball
+    title: "Unban %PLAYER%"
+    command: "/unban %PLAYER%"
+    permission: "aa.gui.unban"
+  unbanip:
+    item: slime_block
+    title: "Unban IP of %PLAYER%"
+    command: "/unban %PLAYER%"
+    permission: "aa.gui.unban"
+nickGUICloseAfterRunningCommand: true
+chatKickAfterIpBan: true
+banIpCommands:
+  - banip
+  - ban-ip
+pluginsWithFullWriteAccessViaAPI:
+  - AdminAnything
+firstRun: true
+lang: en-gb
+debugMode: false
+updateInterval: 7200
+chatMaxPerPageRecords: 10
