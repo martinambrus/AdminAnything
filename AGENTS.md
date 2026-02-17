@@ -226,6 +226,12 @@ These plugins MUST be included in every test run. Sources and version notes for 
 - Other plugins: SpigotMC resource pages, GitHub releases, dev.bukkit.org for legacy versions
 - For each server version, find the latest plugin release that supports that MC version
 
+### Test Execution Rules
+- Run up to 4 test servers in parallel (MAX_PARALLEL=4), never more on a single PC.
+- Use ports starting at 30001 (BASE_PORT env var). Never use port 25565 (reserved for the user's own server).
+- Each test version gets its own log in test-servers/test-logs/<version>.log.
+- run-all-tests.sh handles parallelism automatically: prepares all versions first, then launches tests in batches.
+
 ### Future Test Automation Notes
 The project owner is building a separate Minecraft server test suite for another project (rebuilding MC servers from scratch). A similar but distinct approach may be needed here, focusing on:
 1. Server-side: command execution verification, plugin interaction testing

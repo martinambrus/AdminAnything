@@ -7,6 +7,7 @@
 #   JAVA_BIN    - path to the java binary
 #   TIMEOUT     - max seconds to wait for server start (default 120)
 #   JVM_HEAP    - max heap size (default 1G)
+#   SERVER_PORT - server port (default: random 30000-39999)
 # Globals set by this library:
 #   FIFO        - path to the stdin FIFO
 #   LOG         - path to the server log
@@ -14,6 +15,7 @@
 
 TIMEOUT="${TIMEOUT:-120}"
 JVM_HEAP="${JVM_HEAP:-1G}"
+SERVER_PORT="${SERVER_PORT:-$((RANDOM % 10000 + 30000))}"
 FIFO="$SERVER_DIR/stdin.fifo"
 LOG="$SERVER_DIR/server.log"
 SERVER_PID=""
@@ -55,12 +57,12 @@ cleanup() {
     fi
     rm -f "$FIFO"
     # Kill anything still on the server port
-    kill_port 25565
+    kill_port "$SERVER_PORT"
 }
 
 start_server() {
-    # Kill anything on port 25565 from a previous run
-    kill_port 25565
+    # Kill anything on our port from a previous run
+    kill_port "$SERVER_PORT"
 
     # Clean previous run state
     rm -f "$FIFO" "$LOG"
@@ -68,7 +70,12 @@ start_server() {
     rm -rf "$SERVER_DIR/plugins/AdminAnything"
     mkfifo "$FIFO"
 
-    echo "=== Starting server in $SERVER_DIR with $JAVA_BIN ==="
+    # Set the server port in server.properties
+    if [ -f "$SERVER_DIR/server.properties" ]; then
+        sed -i "s/^server-port=.*/server-port=$SERVER_PORT/" "$SERVER_DIR/server.properties"
+    fi
+
+    echo "=== Starting server in $SERVER_DIR with $JAVA_BIN (port $SERVER_PORT) ==="
     "$JAVA_BIN" -version 2>&1 | head -1
 
     # Start server with stdin from FIFO, stdout/stderr to log

@@ -62,9 +62,12 @@ for jar in "$PLUGINS_DIR"/*.jar; do
     fi
 done
 
-# Deploy EssentialsX (version-appropriate)
+# Deploy Essentials (version-appropriate)
 case "$MC_VERSION" in
-    1.20.4)
+    1.7.*)
+        ESSX_JAR="$CACHE_DIR/Essentials-2.14.1.3.jar"
+        ;;
+    1.20.*|1.21.*)
         ESSX_JAR="$CACHE_DIR/EssentialsX-2.21.2.jar"
         ;;
     *)

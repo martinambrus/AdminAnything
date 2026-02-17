@@ -8,14 +8,22 @@
 #   1. Runs setup-server.sh (BuildTools if needed)
 #   2. Runs download-plugins.sh
 #   3. Deploys adminAnything.jar
-#   4. Runs run-full-test.sh
-#   5. Kills lingering servers
-#   6. Prints aggregate summary
+#   4. Runs run-full-test.sh (in parallel, up to MAX_PARALLEL at a time)
+#   5. Collects results and prints aggregate summary
+#
+# Environment variables:
+#   MAX_PARALLEL - max concurrent test servers (default: 4)
+#   BASE_PORT    - starting port for test servers (default: 30001, avoids 25565)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/.."
+MAX_PARALLEL="${MAX_PARALLEL:-4}"
+BASE_PORT="${BASE_PORT:-30001}"
+LOGS_DIR="$SCRIPT_DIR/test-logs"
+
+mkdir -p "$LOGS_DIR"
 
 # --- Java auto-detection ---
 find_java() {
@@ -36,6 +44,7 @@ find_java() {
         17) paths=(
                 /usr/lib/jvm/temurin-17-jdk-amd64/bin/java
                 /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+                "$SCRIPT_DIR/buildtools/jdk17/bin/java"
             ) ;;
         21) paths=(
                 /usr/lib/jvm/temurin-21-jdk-amd64/bin/java
@@ -67,8 +76,8 @@ java_for_mc() {
         # 1.12.x - 1.16.x: Java 11, fallback 8
         primary=11; fallback=8
     elif [ "$mc_minor" -le 19 ]; then
-        # 1.17.x - 1.19.x: Java 17
-        primary=17; fallback=17
+        # 1.17.x - 1.19.x: Java 17, fallback 21
+        primary=17; fallback=21
     else
         # 1.20+: Java 21
         primary=21; fallback=21
@@ -116,41 +125,48 @@ else
 fi
 
 echo "=== Test matrix: ${VERSIONS[*]} ==="
+echo "=== Parallel: up to $MAX_PARALLEL concurrent servers, ports starting at $BASE_PORT ==="
 echo ""
 
-# --- Run tests for each version ---
-TOTAL_PASS=0
-TOTAL_FAIL=0
-RESULTS=()
+# --- Prepare all versions (sequential, fast) ---
+# Build arrays of versions that are ready to test, with their Java binary
+READY_VERSIONS=()
+READY_JAVA=()
+SKIPPED=()
 
 for ver in "${VERSIONS[@]}"; do
-    echo ""
-    echo "####################################################"
-    echo "# MC $ver"
-    echo "####################################################"
-    echo ""
+    echo "--- Preparing $ver ---"
 
     SERVER_DIR="$SCRIPT_DIR/$ver"
 
     # Determine Java binary
-    JAVA_BIN=$(java_for_mc "$ver") || {
-        echo "SKIP: $ver (no suitable Java found)"
-        RESULTS+=("$ver: SKIPPED (no Java)")
-        continue
-    }
-    echo "Using Java: $JAVA_BIN"
+    JAVA_BIN=""
+    if [[ "$ver" =~ -java([0-9]+)$ ]]; then
+        explicit_java="${BASH_REMATCH[1]}"
+        JAVA_BIN=$(find_java "$explicit_java" 2>/dev/null) || {
+            echo "  SKIP: $ver (no Java $explicit_java found)"
+            SKIPPED+=("$ver: SKIPPED (no Java $explicit_java)")
+            continue
+        }
+    else
+        JAVA_BIN=$(java_for_mc "$ver" 2>/dev/null) || {
+            echo "  SKIP: $ver (no suitable Java found)"
+            SKIPPED+=("$ver: SKIPPED (no Java)")
+            continue
+        }
+    fi
 
     # Setup server if needed
     "$SCRIPT_DIR/setup-server.sh" "$ver" "$JAVA_BIN" || {
-        echo "SKIP: $ver (setup failed)"
-        RESULTS+=("$ver: SKIPPED (setup failed)")
+        echo "  SKIP: $ver (setup failed)"
+        SKIPPED+=("$ver: SKIPPED (setup failed)")
         continue
     }
 
     # Download plugins
     "$SCRIPT_DIR/download-plugins.sh" "$ver" || {
-        echo "SKIP: $ver (plugin download failed)"
-        RESULTS+=("$ver: SKIPPED (plugin download failed)")
+        echo "  SKIP: $ver (plugin download failed)"
+        SKIPPED+=("$ver: SKIPPED (plugin download failed)")
         continue
     }
 
@@ -158,37 +174,129 @@ for ver in "${VERSIONS[@]}"; do
     mkdir -p "$SERVER_DIR/plugins"
     cp "$AA_JAR" "$SERVER_DIR/plugins/adminAnything.jar"
 
-    # Run full test
-    set +e
-    "$SCRIPT_DIR/run-full-test.sh" "$SERVER_DIR" "$JAVA_BIN"
-    TEST_EXIT=$?
-    set -e
-
-    # Kill any lingering server
-    fuser -k 25565/tcp 2>/dev/null || true
-    sleep 1
-
-    if [ $TEST_EXIT -eq 0 ]; then
-        RESULTS+=("$ver: PASSED")
-    else
-        RESULTS+=("$ver: FAILED (exit $TEST_EXIT)")
-        TOTAL_FAIL=$((TOTAL_FAIL + 1))
-    fi
-    TOTAL_PASS=$((TOTAL_PASS + 1))
-
-    echo ""
+    echo "  Ready: $ver (Java: $JAVA_BIN)"
+    READY_VERSIONS+=("$ver")
+    READY_JAVA+=("$JAVA_BIN")
 done
 
-# --- Aggregate summary ---
 echo ""
+echo "=== Preparation complete: ${#READY_VERSIONS[@]} ready, ${#SKIPPED[@]} skipped ==="
+echo ""
+
+if [ ${#READY_VERSIONS[@]} -eq 0 ]; then
+    echo "No versions ready to test."
+    for s in "${SKIPPED[@]}"; do echo "  $s"; done
+    exit 1
+fi
+
+# --- Run tests in parallel batches ---
+RESULTS=()
+TOTAL_RUN=0
+TOTAL_FAIL=0
+
+# Arrays to track running jobs
+declare -a JOB_PIDS=()
+declare -a JOB_VERS=()
+declare -a JOB_LOGS=()
+
+# Launch a test for a version at a given port
+launch_test() {
+    local idx="$1"
+    local port="$2"
+    local ver="${READY_VERSIONS[$idx]}"
+    local java="${READY_JAVA[$idx]}"
+    local server_dir="$SCRIPT_DIR/$ver"
+    local logfile="$LOGS_DIR/${ver}.log"
+
+    echo "  START: $ver (port $port, log: test-logs/${ver}.log)"
+
+    SERVER_PORT="$port" "$SCRIPT_DIR/run-full-test.sh" "$server_dir" "$java" \
+        > "$logfile" 2>&1 &
+    local pid=$!
+
+    JOB_PIDS+=("$pid")
+    JOB_VERS+=("$ver")
+    JOB_LOGS+=("$logfile")
+}
+
+# Wait for one job to finish, collect result, return its slot index
+wait_for_any_job() {
+    while true; do
+        for i in "${!JOB_PIDS[@]}"; do
+            local pid="${JOB_PIDS[$i]}"
+            if ! kill -0 "$pid" 2>/dev/null; then
+                # Job finished, get exit code
+                wait "$pid" 2>/dev/null
+                local exit_code=$?
+                local ver="${JOB_VERS[$i]}"
+                local logfile="${JOB_LOGS[$i]}"
+
+                TOTAL_RUN=$((TOTAL_RUN + 1))
+
+                # Extract pass/fail counts from log
+                local summary
+                summary=$(grep -E "Total:.*Passed:.*Failed:" "$logfile" 2>/dev/null | tail -1 || echo "")
+
+                if [ $exit_code -eq 0 ]; then
+                    echo "  DONE: $ver -> PASSED ($summary)"
+                    RESULTS+=("$ver: PASSED ($summary)")
+                else
+                    echo "  DONE: $ver -> FAILED (exit $exit_code) ($summary)"
+                    RESULTS+=("$ver: FAILED (exit $exit_code) ($summary)")
+                    TOTAL_FAIL=$((TOTAL_FAIL + 1))
+                fi
+
+                # Remove from arrays
+                unset 'JOB_PIDS[i]'
+                unset 'JOB_VERS[i]'
+                unset 'JOB_LOGS[i]'
+                # Re-index
+                JOB_PIDS=("${JOB_PIDS[@]}")
+                JOB_VERS=("${JOB_VERS[@]}")
+                JOB_LOGS=("${JOB_LOGS[@]}")
+                return 0
+            fi
+        done
+        sleep 5
+    done
+}
+
+echo "=== Running tests (max $MAX_PARALLEL parallel) ==="
+
+port_counter=0
+next_idx=0
+total="${#READY_VERSIONS[@]}"
+
+while [ $next_idx -lt $total ] || [ ${#JOB_PIDS[@]} -gt 0 ]; do
+    # Launch jobs up to MAX_PARALLEL
+    while [ $next_idx -lt $total ] && [ ${#JOB_PIDS[@]} -lt $MAX_PARALLEL ]; do
+        local_port=$((BASE_PORT + port_counter))
+        launch_test "$next_idx" "$local_port"
+        port_counter=$((port_counter + 1))
+        next_idx=$((next_idx + 1))
+    done
+
+    # If we have running jobs, wait for one to finish
+    if [ ${#JOB_PIDS[@]} -gt 0 ]; then
+        wait_for_any_job
+    fi
+done
+
+echo ""
+
+# --- Aggregate summary ---
 echo "####################################################"
 echo "# AGGREGATE TEST RESULTS"
 echo "####################################################"
+for s in "${SKIPPED[@]+"${SKIPPED[@]}"}"; do
+    echo "  $s"
+done
 for r in "${RESULTS[@]}"; do
     echo "  $r"
 done
 echo ""
-echo "Versions tested: $TOTAL_PASS  Failed: $TOTAL_FAIL"
+echo "Tested: $TOTAL_RUN  Passed: $((TOTAL_RUN - TOTAL_FAIL))  Failed: $TOTAL_FAIL  Skipped: ${#SKIPPED[@]}"
+echo "Per-version logs: $LOGS_DIR/"
 echo "####################################################"
 
 if [ $TOTAL_FAIL -gt 0 ]; then
