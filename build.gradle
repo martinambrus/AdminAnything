@@ -1,19 +1,21 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.gradleup.shadow' version '8.3.9'
 }
 
 group 'com.martinambrus.adminAnything'
 version '2.4.12'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 ext {
     spigotVersion = '1.16.5-R0.1-SNAPSHOT'
     vaultVersion = '1.7'
     protocollibVersion = '4.5.1'
-    bstatsVersion = '1.4'
+    bstatsVersion = '3.1.0'
     javaassistVersion = '3.27.0-GA'
 }
 
@@ -21,14 +23,14 @@ repositories {
     mavenCentral()
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://repo.dmulloy2.net/content/groups/public/' }
+    maven { url 'https://jitpack.io' }
     maven { url 'https://repo.codemc.org/repository/maven-public' }
     maven { url 'https://repo.md-5.net/content/repositories/releases/' }
 }
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:${spigotVersion}"
-    compileOnly "com.comphenix.protocol:ProtocolLib:${protocollibVersion}"
+    compileOnly("com.github.dmulloy2:ProtocolLib:${protocollibVersion}") { transitive = false }
     compileOnly "net.milkbowl.vault:VaultAPI:${vaultVersion}"
     compileOnly "org.javassist:javassist:${javaassistVersion}"
     implementation "org.bstats:bstats-bukkit:${bstatsVersion}"

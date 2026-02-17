@@ -1,7 +1,7 @@
 package com.martinambrus.adminAnything;
 
 import com.martinambrus.adminAnything.ConfigAbstractAdapter.CONFIG_VALUES;
-import org.bstats.bukkit.Metrics.SimplePie;
+import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.concurrent.Callable;
@@ -76,7 +76,7 @@ final class CustomMetrics {
      * </pre>
      */
     private void initBStats() {
-        final org.bstats.bukkit.Metrics bmetrics = new org.bstats.bukkit.Metrics(plugin);
+        final org.bstats.bukkit.Metrics bmetrics = new org.bstats.bukkit.Metrics(plugin, 29579);
 
         // create graph for Virtual Permisssions
         addBcstatsGraph(bmetrics, "virtual_permissions", //NON-NLS
