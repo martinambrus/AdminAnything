@@ -481,8 +481,9 @@ public class Aa_checkcommandconflicts_runnable implements Runnable {
                 }
             }
 
-            // if we have any problems, let's show them to the player/console
-            if (!allGood) {
+            // check if any plugins override core server commands
+            if (!doneCommandOverrides.isEmpty() || !doneAliasOverrides.isEmpty()) {
+                allGood = false;
                 cccClassInstance.messages.add(new FancyMessage(""));
 
                 cccClassInstance.messages.add(new FancyMessage(
