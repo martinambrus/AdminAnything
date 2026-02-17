@@ -621,9 +621,10 @@ final class TabComplete implements Listener {
 
                         TabCompleter tc = (TabCompleter) cl.getConstructor().newInstance();
                         ((JavaPlugin) plugin).getCommand(cmd).setTabCompleter(tc);
-                    } catch (final NoClassDefFoundError | ClassNotFoundException e1) {
-                        // older versions (1.7-) do not support tab completion
-                        // and neither have all commands tab completers
+                    } catch (final NoClassDefFoundError | ClassNotFoundException | IllegalStateException e1) {
+                        // older versions (1.7-) do not support tab completion,
+                        // not all commands have tab completers, and during reload
+                        // the classloader may be unavailable (zip file closed)
                     } catch (final Throwable e2) {
                         Bukkit.getLogger().severe('[' + config.getPluginName()
                             + "] " + AA_API.__("error.failed-to-register-tab-completer", cmd));

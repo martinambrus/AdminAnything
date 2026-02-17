@@ -210,6 +210,23 @@ assert_output_not_contains() {
     fi
 }
 
+assert_output_match_count() {
+    local description="$1"
+    local pattern="$2"
+    local expected_count="$3"
+    local actual_count
+    actual_count=$(echo "$_LAST_OUTPUT" | grep -ci "$pattern" 2>/dev/null || echo "0")
+    if [ "$actual_count" -ge "$expected_count" ]; then
+        echo "  PASS: $description (found $actual_count, expected >= $expected_count)"
+        _PASS_COUNT=$((_PASS_COUNT + 1))
+        _ASSERTIONS+=("PASS: $description")
+    else
+        echo "  FAIL: $description (found $actual_count, expected >= $expected_count)"
+        _FAIL_COUNT=$((_FAIL_COUNT + 1))
+        _ASSERTIONS+=("FAIL: $description")
+    fi
+}
+
 # Check for error lines in the full log
 check_log_errors() {
     echo ""

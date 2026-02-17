@@ -72,9 +72,8 @@ final class Listeners implements Listener {
             try {
                 Class.forName( "com.martinambrus.easyChat.events.ECChatEvent" );
                 new easyChatNickClicks( plugin );
-            } catch (ClassNotFoundException ex) {
-                // EasyChat not installed, so the listener class fails due to a non-existant class
-                // ... it's all ok, we can ignore this here :)
+            } catch (ClassNotFoundException | IllegalStateException ex) {
+                // EasyChat not installed, or classloader unavailable during reload
             }
         }
 

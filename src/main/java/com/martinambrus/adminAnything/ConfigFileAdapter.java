@@ -46,7 +46,16 @@ final class ConfigFileAdapter extends ConfigAbstractAdapter {
         plugin = aa;
 
         // copy over sample config file with comments in all instances
-        this.plugin.saveResource(this.configFileNameSample, true);
+        try {
+            this.plugin.saveResource(this.configFileNameSample, true);
+        } catch (IllegalArgumentException e) {
+            // During reload, Bukkit's disablePlugin() may invalidate the classloader,
+            // causing saveResource() to fail. The sample file still exists on disk
+            // from the initial enable, so we can safely skip refreshing it.
+            if (!new File(AA_API.getAaDataDir(), this.configFileNameSample).exists()) {
+                throw e;
+            }
+        }
 
         // check for old configuration
         FileConfiguration initialConfig = YamlConfiguration.loadConfiguration(new File(AA_API.getAaDataDir(), "config.yml"));

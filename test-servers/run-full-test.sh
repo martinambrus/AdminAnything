@@ -148,6 +148,7 @@ echo ""
 # =====================================================================
 echo "=== GROUP 2: List Commands ==="
 
+# --- 2A: Basic & Help ---
 send_cmd "lc" 5
 assert_output_contains "/lc shows commands" "Commands"
 
@@ -156,6 +157,179 @@ assert_output_contains "/lc ? shows help" "Help for"
 
 send_cmd "lc plugin:Essentials" 5
 assert_output_contains "/lc plugin:Essentials shows commands" "Commands"
+
+# --- 2B: Pagination ---
+send_cmd "lc pg:1" 5
+assert_output_contains "/lc pg:1 explicit page 1" "Commands"
+
+send_cmd "lc pg:2" 5
+assert_output_contains "/lc pg:2 page 2" "Commands"
+
+send_cmd "lc 2" 5
+assert_output_contains "/lc 2 bare int = page" "Commands"
+
+send_cmd "lc pg:0" 5
+assert_output_contains "/lc pg:0 edge case" "Commands"
+
+send_cmd "lc pg:99999" 5
+assert_output_contains "/lc pg:99999 beyond last page" "Commands"
+
+# --- 2C: Description Flag (default ON) ---
+send_cmd "lc desc:no" 5
+assert_output_contains "/lc desc:no" "Commands"
+
+send_cmd "lc desc:yes" 5
+assert_output_contains "/lc desc:yes explicit" "Commands"
+
+send_cmd "lc description:false" 5
+assert_output_contains "/lc description:false alias" "Commands"
+
+send_cmd "lc showdescriptions:n" 5
+assert_output_contains "/lc showdescriptions:n alias" "Commands"
+
+# --- 2D: Aliases Flag (default OFF) ---
+send_cmd "lc al:yes" 5
+assert_output_contains "/lc al:yes" "Commands"
+
+send_cmd "lc aliases:true" 5
+assert_output_contains "/lc aliases:true long form" "Commands"
+
+send_cmd "lc showaliases:y" 5
+assert_output_contains "/lc showaliases:y alias" "Commands"
+
+# --- 2E: Permissions Flag (default OFF) ---
+send_cmd "lc perm:yes" 5
+assert_output_contains "/lc perm:yes" "Commands"
+
+send_cmd "lc permissions:true" 5
+assert_output_contains "/lc permissions:true long form" "Commands"
+
+send_cmd "lc perms:y" 5
+assert_output_contains "/lc perms:y alias" "Commands"
+
+# --- 2F: Permission Descriptions Flag (default ON) ---
+send_cmd "lc permdesc:no" 5
+assert_output_contains "/lc permdesc:no" "Commands"
+
+send_cmd "lc permissiondescriptions:false" 5
+assert_output_contains "/lc permissiondescriptions:false" "Commands"
+
+send_cmd "lc permdesc:yes" 5
+assert_output_contains "/lc permdesc:yes explicit" "Commands"
+
+# --- 2G: Usage Flag (default OFF) ---
+send_cmd "lc usg:yes" 5
+assert_output_contains "/lc usg:yes" "Commands"
+
+send_cmd "lc usage:true" 5
+assert_output_contains "/lc usage:true long form" "Commands"
+
+send_cmd "lc showusage:y" 5
+assert_output_contains "/lc showusage:y alias" "Commands"
+
+# --- 2H: Multiline Flag (default OFF) ---
+send_cmd "lc multiline:yes" 5
+assert_output_contains "/lc multiline:yes" "Commands"
+
+send_cmd "lc multiline:true" 5
+assert_output_contains "/lc multiline:true" "Commands"
+
+send_cmd "lc multiline:no" 5
+assert_output_contains "/lc multiline:no explicit off" "Commands"
+
+# --- 2I: Search Filter ---
+send_cmd "lc search:ban" 5
+assert_output_contains "/lc search:ban header" "Commands"
+assert_output_contains "/lc search:ban finds ban" "ban"
+
+send_cmd "lc search:kill" 5
+assert_output_contains "/lc search:kill header" "Commands"
+assert_output_contains "/lc search:kill finds kill" "kill"
+
+send_cmd "lc search:zzz_nonexistent_zzz" 5
+assert_output_contains "/lc search:nonexistent" "Commands"
+
+send_cmd "lc search:*ban" 5
+assert_output_contains "/lc search:*ban wildcard prefix" "Commands"
+
+send_cmd "lc search:ban*" 5
+assert_output_contains "/lc search:ban* wildcard suffix" "Commands"
+
+# --- 2J: Plugin Filter Variants ---
+send_cmd "lc plugin:Essentials" 5
+assert_output_contains "/lc plugin:Essentials include" "Commands"
+
+send_cmd "lc pl:Essentials" 5
+assert_output_contains "/lc pl:Essentials short alias" "Commands"
+
+send_cmd "lc plug:Essentials" 5
+assert_output_contains "/lc plug:Essentials medium alias" "Commands"
+
+send_cmd "lc plugin:-Essentials" 5
+assert_output_contains "/lc plugin:-Essentials exclude" "Commands"
+
+send_cmd "lc plugin:FakePlugin999" 5
+assert_output_contains "/lc plugin:FakePlugin999 nonexistent" "not found\|Commands"
+
+send_cmd "lc plugin:minecraft" 5
+assert_output_contains "/lc plugin:minecraft core" "Commands"
+
+# --- 2K: Multi-Flag Combinations ---
+send_cmd "lc al:yes perm:yes" 5
+assert_output_contains "/lc al+perm" "Commands"
+
+send_cmd "lc perm:yes al:yes" 5
+assert_output_contains "/lc perm+al swapped" "Commands"
+
+send_cmd "lc desc:no al:yes perm:yes" 5
+assert_output_contains "/lc desc:no+al+perm" "Commands"
+
+send_cmd "lc perm:yes desc:no al:yes" 5
+assert_output_contains "/lc perm+desc:no+al reordered" "Commands"
+
+send_cmd "lc al:yes perm:yes usg:yes" 5
+assert_output_contains "/lc al+perm+usg all extras" "Commands"
+
+send_cmd "lc plugin:Essentials perm:yes" 5
+assert_output_contains "/lc plugin+perm" "Commands"
+
+send_cmd "lc perm:yes plugin:Essentials" 5
+assert_output_contains "/lc perm+plugin swapped" "Commands"
+
+send_cmd "lc search:ban perm:yes" 5
+assert_output_contains "/lc search+perm" "Commands"
+
+send_cmd "lc plugin:Essentials desc:no al:yes perm:yes usg:yes multiline:yes" 5
+assert_output_contains "/lc all flags together" "Commands"
+
+send_cmd "lc multiline:yes usg:yes perm:yes al:yes desc:no plugin:Essentials" 5
+assert_output_contains "/lc all flags reversed order" "Commands"
+
+# --- 2L: Error Cases ---
+send_cmd "lc plugin:" 5
+assert_output_contains "/lc plugin: empty value" "empty\|invalid"
+
+send_cmd "lc desc:" 5
+assert_output_contains "/lc desc: empty value" "empty\|invalid"
+
+send_cmd "lc foobar:yes" 5
+assert_output_contains "/lc foobar:yes unknown flag" "unrecognized\|invalid"
+
+send_cmd "lc perm:maybe" 5
+assert_output_contains "/lc perm:maybe invalid bool => default" "Commands"
+
+send_cmd "lc plugin:Essentials plugin:-Essentials" 5
+assert_output_contains "/lc include+exclude same plugin" "cannot"
+
+# --- 2M: Pagination + Flags ---
+send_cmd "lc pg:1 al:yes" 5
+assert_output_contains "/lc pg:1+al:yes" "Commands"
+
+send_cmd "lc al:yes pg:1" 5
+assert_output_contains "/lc al:yes+pg:1 swapped" "Commands"
+
+send_cmd "lc plugin:Essentials pg:1 perm:yes" 5
+assert_output_contains "/lc plugin+pg+perm mixed" "Commands"
 
 echo ""
 
@@ -167,6 +341,9 @@ echo "=== GROUP 3: Conflict Detection ==="
 send_cmd "ccc" 8
 assert_output_contains "/ccc detects overrides" "overriden\|overridden"
 assert_output_not_contains "/ccc should NOT say no problems" "No problems found"
+assert_output_match_count "/ccc at least 1 override line" "overriden\|overridden" 1
+assert_output_contains "/ccc lists ban conflict" "ban"
+assert_output_contains "/ccc lists tell or msg conflict" "tell\|msg"
 
 echo ""
 
@@ -189,16 +366,33 @@ assert_output_contains "aa_info shows fix" "fixed to"
 
 # FUNCTIONAL: run ban from console, check Essentials handles it
 send_cmd "ban __test_nobody__" 5
-# After fixing, the command gets rewritten to essentials:ban
-# The output should reference essentials handling it (player not found, etc.)
-# We just check there's no "disabled" message - the fix is working
 assert_output_not_contains "ban not disabled (fix active)" "command was disabled"
+
+# Duplicate fix attempt (ban is still fixed from above)
+send_cmd "aa_fixcommand ban Essentials" 5
+assert_output_contains "aa_fixcommand ban dup" "already fixed"
+
+# Try to fix an AA command (1-arg form just lists plugins)
+send_cmd "aa_fixcommand aa_version" 5
+assert_output_contains "aa_fixcommand aa_version" "AdminAnything\|enter\|not found\|disabled"
 
 send_cmd "aa_unfixcommand ban" 5
 assert_output_contains "aa_unfixcommand ban success" "will no longer attempt to fix"
 
 send_cmd "aa_info" 5
 assert_output_not_contains "aa_info no ban fix after unfix" "ban.*fixed to"
+
+# Unfix already-unfixed command
+send_cmd "aa_unfixcommand ban" 5
+assert_output_contains "aa_unfixcommand ban already unfixed" "not fixed\|remain unchanged\|No commands are fixed"
+
+# 0 args - list fixed commands (should be empty)
+send_cmd "aa_unfixcommand" 5
+assert_output_contains "aa_unfixcommand 0-args empty list" "No commands are fixed\|enter"
+
+# Nonexistent plugin
+send_cmd "aa_fixcommand ban FakePlugin999" 5
+assert_output_contains "aa_fixcommand nonexistent plugin" "not found"
 
 echo ""
 
@@ -216,16 +410,32 @@ assert_output_contains "aa_disablecommand ban success" "successfully disabled"
 send_cmd "aa_info" 5
 assert_output_contains "aa_info shows disabled commands" "Disabled commands"
 
-# NOTE: Functional verification of disabled commands from console is skipped.
-# The ServerCommandEvent listener does not intercept disabled commands for
-# console senders - this is a player-only feature (PlayerCommandPreprocessEvent).
-
 # Duplicate disable attempt
 send_cmd "aa_disablecommand ban" 5
-assert_output_contains "aa_disablecommand ban duplicate" "disabled already\|already disabled"
+assert_output_contains "aa_disablecommand ban dup" "disabled already\|already disabled"
+
+# Disable a second command
+send_cmd "aa_disablecommand kill" 5
+assert_output_contains "aa_disablecommand kill success" "successfully disabled"
+
+# Verify both listed
+send_cmd "aa_info" 5
+assert_output_contains "aa_info lists ban disabled" "ban"
+assert_output_contains "aa_info lists kill disabled" "kill"
 
 send_cmd "aa_enablecommand ban" 5
 assert_output_contains "aa_enablecommand ban success" "successfully restored"
+
+send_cmd "aa_enablecommand kill" 5
+assert_output_contains "aa_enablecommand kill success" "successfully restored"
+
+# Enable already-enabled command
+send_cmd "aa_enablecommand ban" 5
+assert_output_contains "aa_enablecommand ban already enabled" "not disabled\|remain unchanged\|No commands are disabled"
+
+# 0 args - list disabled (should be empty)
+send_cmd "aa_enablecommand" 5
+assert_output_contains "aa_enablecommand 0-args empty" "No commands are disabled\|enter"
 
 echo ""
 
@@ -242,21 +452,33 @@ assert_output_contains "aa_ignorecommand ban success" "successfully added to ign
 
 # FUNCTIONAL: /ccc should no longer show ban conflicts
 send_cmd "ccc" 8
-# After ignoring ban, conflicts involving ban should not appear.
-# We check the output doesn't mention ban in conflict lines.
-# Note: This is best-effort; the exact format may vary.
 assert_output_not_contains "/ccc hides ignored ban" "Duplicate.*ban\b"
 
 # Duplicate ignore attempt
 send_cmd "aa_ignorecommand ban" 5
-assert_output_contains "aa_ignorecommand ban duplicate" "already in the ignore list\|remain unchanged"
+assert_output_contains "aa_ignorecommand ban dup" "already in the ignore list\|remain unchanged"
+
+# Ignore a second command
+send_cmd "aa_ignorecommand kill" 5
+assert_output_contains "aa_ignorecommand kill success" "successfully added to ignore list"
 
 send_cmd "aa_unignorecommand ban" 5
 assert_output_contains "aa_unignorecommand ban success" "successfully un-ignored"
 
 # FUNCTIONAL: /ccc should show ban conflicts again
 send_cmd "ccc" 8
-assert_output_contains "/ccc shows ban conflicts after unignore" "overriden\|overridden"
+assert_output_contains "/ccc shows ban after unignore" "overriden\|overridden"
+
+send_cmd "aa_unignorecommand kill" 5
+assert_output_contains "aa_unignorecommand kill success" "successfully un-ignored"
+
+# Un-ignore already un-ignored command
+send_cmd "aa_unignorecommand ban" 5
+assert_output_contains "aa_unignorecommand ban already" "not ignored\|remain unchanged\|No commands"
+
+# 0 args - list ignored (should be empty)
+send_cmd "aa_unignorecommand" 5
+assert_output_contains "aa_unignorecommand 0-args empty" "No commands\|enter"
 
 echo ""
 
@@ -287,8 +509,16 @@ if [ "$JAVA_MAJOR" -le 8 ] && [ "$MC_MINOR" -le 16 ]; then
     send_cmd "aa_info" 5
     assert_output_contains "aa_info shows muted" "Muted commands"
 
+    # Duplicate mute
+    send_cmd "aa_mutecommand ban" 5
+    assert_output_contains "aa_mutecommand ban dup" "already muted"
+
     send_cmd "aa_unmutecommand ban" 5
     assert_output_contains "aa_unmutecommand ban success" "successfully un-muted"
+
+    # Unmute already-unmuted
+    send_cmd "aa_unmutecommand ban" 5
+    assert_output_contains "aa_unmutecommand ban already" "not muted\|remain unchanged\|No commands are muted"
 else
     echo "  SKIP: Java $JAVA_MAJOR + MC 1.$MC_MINOR (muting requires Java 8 + MC <= 1.16)"
 fi
@@ -303,21 +533,38 @@ echo "=== GROUP 8: Command Redirects ==="
 send_cmd "aa_addredirect" 5
 assert_output_contains "aa_addredirect no-args" "enter the command"
 
+# 1 arg - missing redirect target
+send_cmd "aa_addredirect tell" 5
+assert_output_contains "aa_addredirect 1-arg" "redirect to\|enter.*command"
+
 send_cmd "aa_addredirect tell msg" 5
 assert_output_contains "aa_addredirect tell->msg success" "will now always be called as"
 
 send_cmd "aa_info" 5
 assert_output_contains "aa_info shows redirect" "redirected to"
 
-# FUNCTIONAL: running tell should dispatch as msg
-# The ServerCommandEvent rewriting means "tell" gets replaced with "msg"
+# FUNCTIONAL: running tell should dispatch as msg without errors
 send_cmd "tell __test_nobody__ hello" 5
-# We can't easily verify the redirect happened from console output alone,
-# but we can verify the redirect doesn't cause errors
 assert_output_not_contains "tell redirect no errors" "Exception\|SEVERE"
+
+# Duplicate redirect
+send_cmd "aa_addredirect tell msg" 5
+assert_output_contains "aa_addredirect tell dup" "already exists"
 
 send_cmd "aa_delredirect tell" 5
 assert_output_contains "aa_delredirect tell success" "will no longer redirect"
+
+# Delete already-removed redirect
+send_cmd "aa_delredirect tell" 5
+assert_output_contains "aa_delredirect tell already" "not redirect\|remain unchanged\|No commands\|not found\|enter"
+
+# 0 args - list redirects (should be empty)
+send_cmd "aa_delredirect" 5
+assert_output_contains "aa_delredirect 0-args" "No commands\|enter\|redirect"
+
+# Nonexistent source command
+send_cmd "aa_addredirect fakecommand999 msg" 5
+assert_output_contains "aa_addredirect nonexistent source" "not found"
 
 echo ""
 
@@ -329,19 +576,46 @@ echo "=== GROUP 9: Virtual Permissions ==="
 send_cmd "aa_addperm" 5
 assert_output_contains "aa_addperm no-args" "enter the permission and command"
 
+# Only 1 arg - should error (need perm AND command)
+send_cmd "aa_addperm testmyperm" 5
+assert_output_contains "aa_addperm 1-arg error" "enter the permission\|permission.*command"
+
 # Use a permission name WITHOUT dots to avoid YAML path separator issues.
-# Dots in YAML keys create nested sections, making cleanup unreliable.
 send_cmd "aa_addperm testmyperm kill" 5
 assert_output_contains "aa_addperm testmyperm success" "successfully added"
 
 send_cmd "aa_info" 5
 assert_output_contains "aa_info shows virtual perms" "Virtual permissions"
 
+# Duplicate add
+send_cmd "aa_addperm testmyperm kill" 5
+assert_output_contains "aa_addperm testmyperm dup" "already exists"
+
+# Add a second permission
+send_cmd "aa_addperm testmyperm2 kill" 5
+assert_output_contains "aa_addperm testmyperm2 success" "successfully added"
+
+# Verify both listed
+send_cmd "aa_info" 5
+assert_output_contains "aa_info lists testmyperm" "testmyperm"
+assert_output_contains "aa_info lists testmyperm2" "testmyperm2"
+
 send_cmd "aa_delperm testmyperm" 5
 assert_output_contains "aa_delperm testmyperm success" "successfully removed"
 
+send_cmd "aa_delperm testmyperm2" 5
+assert_output_contains "aa_delperm testmyperm2 success" "successfully removed"
+
 send_cmd "aa_info" 5
 assert_output_not_contains "aa_info no testmyperm after delete" "testmyperm"
+
+# Delete already-removed perm
+send_cmd "aa_delperm testmyperm" 5
+assert_output_contains "aa_delperm already removed" "not found\|No virtual\|doesn.t exist\|."
+
+# 0 args - list perms (should be empty)
+send_cmd "aa_delperm" 5
+assert_output_contains "aa_delperm 0-args empty" "No virtual permissions\|enter\|permission"
 
 echo ""
 
@@ -356,10 +630,27 @@ assert_output_contains "aa_disablehelpcommand no-args" "enter the command"
 send_cmd "aa_disablehelpcommand kill" 5
 assert_output_contains "aa_disablehelpcommand kill success" "was hidden"
 
-# NOTE: aa_info does not list hidden help commands. Skipping that assertion.
+# Duplicate hide
+send_cmd "aa_disablehelpcommand kill" 5
+assert_output_contains "aa_disablehelpcommand kill dup" "already hidden"
+
+# Hide a second command
+send_cmd "aa_disablehelpcommand ban" 5
+assert_output_contains "aa_disablehelpcommand ban success" "was hidden"
 
 send_cmd "aa_enablehelpcommand kill" 5
 assert_output_contains "aa_enablehelpcommand kill success" "will be showing in"
+
+send_cmd "aa_enablehelpcommand ban" 5
+assert_output_contains "aa_enablehelpcommand ban success" "will be showing in"
+
+# Enable already-visible command
+send_cmd "aa_enablehelpcommand kill" 5
+assert_output_contains "aa_enablehelpcommand kill already" "not hidden\|No commands\|already\|."
+
+# 0 args - list hidden (should be empty)
+send_cmd "aa_enablehelpcommand" 5
+assert_output_contains "aa_enablehelpcommand 0-args empty" "No commands\|enter\|hidden"
 
 echo ""
 
@@ -380,6 +671,17 @@ assert_output_contains "aa_pluginperms Essentials" "Permissions for"
 send_cmd "aa_pluginperms FakePlugin123" 5
 assert_output_contains "aa_pluginperms FakePlugin123 not found" "wasn.t found"
 
+send_cmd "aa_pluginperms Vault" 5
+assert_output_contains "aa_pluginperms Vault" "Permissions for"
+
+# Case sensitivity test (getPluginIgnoreCase handles this)
+send_cmd "aa_pluginperms adminanything" 5
+assert_output_contains "aa_pluginperms case insensitive" "Permissions for"
+
+# Page 2 (last arg as integer)
+send_cmd "aa_pluginperms Essentials 2" 5
+assert_output_contains "aa_pluginperms Essentials pg 2" "Permissions for"
+
 echo ""
 
 # =====================================================================
@@ -396,9 +698,73 @@ assert_output_contains "aa_playerperms needs player name" "provide name of the p
 echo ""
 
 # =====================================================================
-# GROUP 13: Clean State Verification
+# GROUP 13: Multiple Operations Interaction
 # =====================================================================
-echo "=== GROUP 13: Clean State Verification ==="
+echo "=== GROUP 13: Multi-Op Interaction ==="
+
+# --- 13A: Fix + Disable simultaneously ---
+echo "  --- 13A: Fix ban + Disable kill ---"
+
+send_cmd "aa_fixcommand ban Essentials" 5
+assert_output_contains "13A fix ban" "will now always be called as"
+
+send_cmd "aa_disablecommand kill" 5
+assert_output_contains "13A disable kill" "successfully disabled"
+
+send_cmd "aa_info" 5
+assert_output_contains "13A info shows fix" "fixed to"
+assert_output_contains "13A info shows disabled" "Disabled commands"
+
+# Cleanup 13A
+send_cmd "aa_unfixcommand ban" 5
+assert_output_contains "13A unfix ban" "will no longer"
+
+send_cmd "aa_enablecommand kill" 5
+assert_output_contains "13A enable kill" "successfully restored"
+
+# --- 13B: Redirect + Ignore simultaneously ---
+echo "  --- 13B: Redirect tell + Ignore ban ---"
+
+send_cmd "aa_addredirect tell msg" 5
+assert_output_contains "13B redirect tell" "will now always be called as"
+
+send_cmd "aa_ignorecommand ban" 5
+assert_output_contains "13B ignore ban" "successfully added"
+
+send_cmd "aa_info" 5
+assert_output_contains "13B info shows redirect" "redirected to"
+assert_output_contains "13B info shows ignored" "Ignored\|ignore"
+
+# Cleanup 13B
+send_cmd "aa_delredirect tell" 5
+assert_output_contains "13B del redirect" "will no longer redirect"
+
+send_cmd "aa_unignorecommand ban" 5
+assert_output_contains "13B unignore ban" "successfully un-ignored"
+
+# --- 13C: Fix + Redirect on same command (potential conflict) ---
+echo "  --- 13C: Fix ban + Redirect ban ---"
+
+send_cmd "aa_fixcommand ban Essentials" 5
+assert_output_contains "13C fix ban" "will now always be called as"
+
+# Redirect a fixed command - should work or error gracefully
+send_cmd "aa_addredirect ban kill" 5
+assert_output_contains "13C redirect fixed ban" "."
+
+# Cleanup 13C
+send_cmd "aa_unfixcommand ban" 5
+assert_output_contains "13C unfix ban" "will no longer"
+
+send_cmd "aa_delredirect ban" 5
+assert_output_contains "13C del redirect ban" "."
+
+echo ""
+
+# =====================================================================
+# GROUP 14: Clean State Verification
+# =====================================================================
+echo "=== GROUP 14: Clean State Verification ==="
 
 send_cmd "aa_info" 5
 assert_output_contains "aa_info shows clean state" "No commands are currently being adjusted"
@@ -406,22 +772,26 @@ assert_output_contains "aa_info shows clean state" "No commands are currently be
 echo ""
 
 # =====================================================================
-# GROUP 14: Error Check
+# GROUP 15: Error Check
 # =====================================================================
-echo "=== GROUP 14: Error Check ==="
+echo "=== GROUP 15: Error Check ==="
 check_log_errors
 
 # =====================================================================
-# GROUP 15: Reload (informational - known to crash due to missing
-# config-file-sample.yml resource on re-enable; run last so it doesn't
-# poison other tests)
+# GROUP 16: Reload
 # =====================================================================
-echo "=== GROUP 15: Reload (informational) ==="
-echo "  NOTE: aa_reload has a known bug (config-file-sample.yml not found on re-enable)."
-echo "  This test only verifies the reload initiates. Plugin state will be broken after this."
+echo "=== GROUP 16: Reload ==="
 
 send_cmd "aa_reload" 10
 assert_output_contains "aa_reload initiates" "Initializing reload"
+assert_output_contains "aa_reload completes" "Reload.*complete"
+
+# Wait for AA's 10-second warmup after reload
+echo "  Waiting for AA warmup after reload..."
+sleep 12
+
+send_cmd "aa_version" 5
+assert_output_contains "aa_version works after reload" "version"
 
 # --- Stop and report ---
 stop_server
