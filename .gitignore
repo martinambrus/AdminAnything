@@ -3,4 +3,6 @@
 /.gradle/
 /gradle
 gradlew*
-/test-servers/
+/test-servers/*
+!/test-servers/.gitkeep
+!/test-servers/*.sh
