@@ -226,8 +226,8 @@ wait_for_any_job() {
             local pid="${JOB_PIDS[$i]}"
             if ! kill -0 "$pid" 2>/dev/null; then
                 # Job finished, get exit code
-                wait "$pid" 2>/dev/null
-                local exit_code=$?
+                local exit_code=0
+                wait "$pid" 2>/dev/null || exit_code=$?
                 local ver="${JOB_VERS[$i]}"
                 local logfile="${JOB_LOGS[$i]}"
 

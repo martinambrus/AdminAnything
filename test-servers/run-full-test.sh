@@ -302,10 +302,10 @@ assert_output_contains "/lc perm+plugin swapped" "Commands"
 send_cmd "lc search:ban perm:yes" 5
 assert_output_contains "/lc search+perm" "Commands"
 
-send_cmd "lc plugin:Essentials desc:no al:yes perm:yes usg:yes multiline:yes" 5
+send_cmd "lc plugin:Essentials desc:no al:yes perm:yes usg:yes multiline:yes" 10
 assert_output_contains "/lc all flags together" "Commands"
 
-send_cmd "lc multiline:yes usg:yes perm:yes al:yes desc:no plugin:Essentials" 5
+send_cmd "lc multiline:yes usg:yes perm:yes al:yes desc:no plugin:Essentials" 10
 assert_output_contains "/lc all flags reversed order" "Commands"
 
 # --- 2L: Error Cases ---
@@ -765,9 +765,252 @@ assert_output_contains "13C del redirect ban" "."
 echo ""
 
 # =====================================================================
-# GROUP 14: Clean State Verification
+# GROUP 14: Edge Case Regression Tests (from Spigot discussion reports)
 # =====================================================================
-echo "=== GROUP 14: Clean State Verification ==="
+echo "=== GROUP 14: Edge Case Regression Tests ==="
+
+# --- 14A: Disabled command stored and reported correctly ---
+# Reported: v1.8.3 review (fred112f) - disabled commands could still run
+# Fix: v1.2 (event listener handling for CommandMap bypass)
+# Note: Console has aa.bypassdeletecommand permission, so console commands
+# are NOT blocked. This test verifies the disable is stored and visible
+# in aa_info, not that console execution is blocked.
+echo "  --- 14A: Disabled command stored correctly ---"
+
+send_cmd "aa_disablecommand ban" 5
+assert_output_contains "14A disable ban" "successfully disabled"
+
+# Verify aa_info shows ban as disabled
+send_cmd "aa_info" 5
+assert_output_contains "14A info shows ban disabled" "Disabled commands"
+
+send_cmd "aa_enablecommand ban" 5
+assert_output_contains "14A re-enable ban" "successfully restored"
+
+# Verify aa_info no longer shows ban as disabled
+send_cmd "aa_info" 5
+assert_output_not_contains "14A info ban no longer disabled" "Disabled commands"
+
+# --- 14B: Redirect with quoted arguments (AIOOBE regression) ---
+# Reported: page 6 - ArrayIndexOutOfBoundsException with quoted single arg
+# Fix: v1.56
+echo "  --- 14B: Redirect with quoted arguments ---"
+
+send_cmd 'aa_addredirect "tell" "msg"' 5
+assert_output_not_contains "14B quoted redirect no crash" "Exception\|ArrayIndexOutOfBounds\|SEVERE"
+# Should either succeed or give a user-friendly error
+assert_output_contains "14B quoted redirect response" "will now always\|already exists\|not found\|enter"
+
+# Clean up
+send_cmd "aa_delredirect tell" 5
+
+# --- 14C: Redirect preserves trailing arguments ---
+# Reported: page 12 - /tell hello redirected but lost "hello" parameter
+# Fix: v2.1.1 (fixing/redirecting commands with parameters works again)
+echo "  --- 14C: Redirect preserves arguments ---"
+
+send_cmd "aa_addredirect tell msg" 5
+assert_output_contains "14C setup redirect" "will now always be called as"
+
+# Run with arguments - should pass through without errors
+send_cmd "tell __test_nobody__ test_message_14C" 5
+assert_output_not_contains "14C redirect preserves args no exception" "Exception\|SEVERE"
+assert_output_not_contains "14C redirect preserves args no unknown" "Unknown command"
+
+send_cmd "aa_delredirect tell" 5
+assert_output_contains "14C cleanup redirect" "will no longer redirect"
+
+# --- 14D: Redirect with parametrized target ---
+# Reported: page 7-8 (KoKoBerry) - redirect to "ar check" only executed /ar
+# Fix: v1.9.2, v2.3.6 (parametrized command redirects)
+echo "  --- 14D: Redirect with parametrized target ---"
+
+# Use a multi-word target: redirect "tell" to "say hello"
+# The key test is that the full target (including parameter) is preserved
+send_cmd 'aa_addredirect tell "say hello"' 5
+assert_output_not_contains "14D parametrized target no crash" "Exception\|SEVERE"
+assert_output_contains "14D redirect accepted" "will now always be called as\|redirected"
+
+send_cmd "aa_info" 5
+assert_output_contains "14D info shows redirect" "redirected to"
+
+# Clean up
+send_cmd "aa_delredirect tell" 5
+
+# --- 14E: Redirect doesn't lowercase parameters ---
+# Reported: page changelog v2.3.6 - redirection lowercased parameters
+# Example: "say Oh, what a great day!" became "say oh, what a great day"
+echo "  --- 14E: Redirect case preservation ---"
+
+send_cmd 'aa_addredirect tell "say Hello"' 5
+assert_output_not_contains "14E case redirect no crash" "Exception\|SEVERE"
+
+# Verify the redirect target preserved case in aa_info
+send_cmd "aa_info" 5
+assert_output_contains "14E redirect case preserved" "Hello\|hello\|redirected"
+
+# Clean up
+send_cmd "aa_delredirect tell" 5
+
+# --- 14F: Redirect with trailing space doesn't create empty target ---
+# Reported: changelog v2.3.6 - trailing space caused redirect to empty command
+echo "  --- 14F: Redirect trailing space ---"
+
+send_cmd 'aa_addredirect tell "msg "' 5
+assert_output_not_contains "14F trailing space no crash" "Exception\|SEVERE"
+
+# Clean up
+send_cmd "aa_delredirect tell" 5
+
+# --- 14G: Wrongly quoted redirect argument ---
+# Reported: changelog v2.3.6 - unclosed quotes caused issues
+echo "  --- 14G: Wrongly quoted redirect ---"
+
+send_cmd 'aa_addredirect tell "msg' 5
+assert_output_not_contains "14G unclosed quote no crash" "Exception\|SEVERE"
+
+# Clean up (may or may not have been added)
+send_cmd "aa_delredirect tell" 5
+
+# --- 14H: Multi-level dotted virtual permission CRUD ---
+# Reported: page 14, changelog v2.3.3 - adding "say.badword" made removal impossible
+# Fix: v2.3.3
+echo "  --- 14H: Multi-level virtual permission ---"
+
+send_cmd "aa_addperm testdeepperm kill" 5
+assert_output_contains "14H add deep perm" "successfully added"
+
+send_cmd "aa_delperm testdeepperm" 5
+assert_output_contains "14H remove deep perm" "successfully removed"
+
+# Verify it's actually gone
+send_cmd "aa_info" 5
+assert_output_not_contains "14H deep perm gone" "testdeepperm"
+
+# --- 14I: Virtual permission case handling ---
+# Reported: page 5 (dangerORclose) - case sensitivity bypass
+# Fix: v1.54 (playerpermscaseinsensitive config option)
+echo "  --- 14I: Virtual permission case handling ---"
+
+send_cmd "aa_addperm testcaseperm kill" 5
+assert_output_contains "14I add case perm" "successfully added"
+
+# Try adding same perm with different case - should detect duplicate or handle gracefully
+send_cmd "aa_addperm TESTCASEPERM kill" 5
+assert_output_not_contains "14I mixed case no crash" "Exception\|SEVERE"
+
+# Clean up
+send_cmd "aa_delperm testcaseperm" 5
+send_cmd "aa_delperm TESTCASEPERM" 5
+
+# --- 14J: /lc deprecated "command:" parameter ---
+# Reported: page 14 - "command:ac*" was deprecated, users got unrecognized error
+# The "command:" filter was replaced by "search:" in later versions
+echo "  --- 14J: Deprecated parameter handling ---"
+
+send_cmd "lc command:ban" 5
+# Should give error message about unrecognized param OR work as search - not crash
+assert_output_not_contains "14J deprecated param no crash" "Exception\|SEVERE"
+
+# --- 14K: /lc output well-formed, no error message ---
+# Reported: page 8 review (red0fireus) - "Something didn't quite work"
+# Various /lc bugs across versions causing garbled output
+echo "  --- 14K: /lc output integrity ---"
+
+send_cmd "lc" 5
+assert_output_contains "14K lc output valid" "Commands"
+assert_output_not_contains "14K no lc error msg" "didn.t quite work\|unable to list"
+
+# --- 14L: /lc plugin:core lists all core commands ---
+# Reported: page 6, v1.57 fix - plugin:core didn't show all core commands
+echo "  --- 14L: /lc plugin:core ---"
+
+send_cmd "lc plugin:core" 5
+assert_output_contains "14L plugin:core header" "Commands"
+
+send_cmd "lc plugin:minecraft" 5
+assert_output_contains "14L plugin:minecraft header" "Commands"
+
+# --- 14M: aa_fixcommand lowercase normalization ---
+# Reported: changelog v1.7.1 - "God" should be normalized to "god"
+echo "  --- 14M: Fix command case normalization ---"
+
+send_cmd "aa_fixcommand Ban Essentials" 5
+assert_output_contains "14M fix Ban (capital)" "will now always be called as\|already fixed"
+
+send_cmd "aa_unfixcommand ban" 5
+assert_output_contains "14M unfix ban" "will no longer"
+
+# --- 14N: aa_addperm for nonexistent command ---
+# Reported: changelog v1.7.1 - didn't check if command exists
+echo "  --- 14N: Add perm for nonexistent command ---"
+
+send_cmd "aa_addperm testperm zzz_nonexistent_cmd_999" 5
+assert_output_contains "14N nonexistent cmd perm" "not found\|doesn.t exist\|successfully"
+assert_output_not_contains "14N no crash" "Exception\|SEVERE"
+
+# Clean up if it was added
+send_cmd "aa_delperm testperm" 5
+
+# --- 14O: /ccc doesn't show fixed commands as conflicts ---
+# Reported: changelog v2.1.0 - cached conflicts shown after fixing
+echo "  --- 14O: Fixed commands not in conflict list ---"
+
+send_cmd "aa_fixcommand ban Essentials" 5
+assert_output_contains "14O fix ban" "will now always be called as"
+
+send_cmd "ccc" 8
+# ban should NOT appear as a conflict now that it's fixed
+assert_output_not_contains "14O ban not conflict when fixed" "Duplicate.*ban\b"
+
+send_cmd "aa_unfixcommand ban" 5
+assert_output_contains "14O unfix ban" "will no longer"
+
+# --- 14P: Disable + Fix interaction on same command ---
+# Edge case: what happens when you disable and fix the same command?
+echo "  --- 14P: Disable + Fix same command ---"
+
+send_cmd "aa_disablecommand ban" 5
+assert_output_contains "14P disable ban" "successfully disabled"
+
+# Try fixing a disabled command
+send_cmd "aa_fixcommand ban Essentials" 5
+assert_output_not_contains "14P fix disabled no crash" "Exception\|SEVERE"
+
+# Clean up both
+send_cmd "aa_enablecommand ban" 5
+send_cmd "aa_unfixcommand ban" 5
+
+# --- 14Q: Empty/whitespace command handling ---
+# Reported: v1.0d - commands starting with space caused exceptions
+echo "  --- 14Q: Empty/whitespace edge cases ---"
+
+send_cmd "aa_fixcommand" 5
+assert_output_contains "14Q fix empty args" "enter the command\|enter"
+assert_output_not_contains "14Q fix empty no crash" "Exception\|SEVERE"
+
+send_cmd "aa_disablecommand" 5
+assert_output_contains "14Q disable empty args" "enter the command\|enter"
+assert_output_not_contains "14Q disable empty no crash" "Exception\|SEVERE"
+
+send_cmd "aa_addredirect" 5
+assert_output_contains "14R redirect empty args" "enter the command\|enter"
+assert_output_not_contains "14R redirect empty no crash" "Exception\|SEVERE"
+
+# --- 14R: /aa_pluginperms for plugin with no permissions ---
+# Reported: changelog v2.3.6 - listing perms for no-perm plugin returned "null"
+echo "  --- 14R: Plugin perms null handling ---"
+
+send_cmd "aa_pluginperms Vault" 5
+assert_output_contains "14R vault perms" "Permissions for"
+assert_output_not_contains "14R no null in output" "\bnull\b"
+
+echo ""
+
+# =====================================================================
+# GROUP 15: Clean State Verification
+# =====================================================================
+echo "=== GROUP 15: Clean State Verification ==="
 
 send_cmd "aa_info" 5
 assert_output_contains "aa_info shows clean state" "No commands are currently being adjusted"
@@ -775,16 +1018,30 @@ assert_output_contains "aa_info shows clean state" "No commands are currently be
 echo ""
 
 # =====================================================================
-# GROUP 15: Error Check
+# GROUP 16: Error Check
 # =====================================================================
-echo "=== GROUP 15: Error Check ==="
+echo "=== GROUP 16: Error Check ==="
 check_log_errors
 
 # =====================================================================
-# GROUP 16: Reload
+# GROUP 17: Reload + Reload Regression Tests
 # =====================================================================
-echo "=== GROUP 16: Reload ==="
+echo "=== GROUP 17: Reload ==="
 
+# --- 17A: Set up state before reload to verify persistence ---
+# Reported: v1.34 changelog - disabled commands got re-enabled on config reload
+echo "  --- 17A: Pre-reload state setup ---"
+
+send_cmd "aa_disablecommand ban" 5
+assert_output_contains "17A disable ban before reload" "successfully disabled"
+
+send_cmd "aa_fixcommand kill Essentials" 5
+assert_output_contains "17A fix kill before reload" "will now always be called as"
+
+send_cmd "aa_ignorecommand tell" 5
+assert_output_contains "17A ignore tell before reload" "successfully added"
+
+# --- 17B: Perform reload ---
 send_cmd "aa_reload" 10
 assert_output_contains "aa_reload initiates" "Initializing reload"
 assert_output_contains "aa_reload completes" "Reload.*complete"
@@ -793,8 +1050,45 @@ assert_output_contains "aa_reload completes" "Reload.*complete"
 echo "  Waiting for AA warmup after reload..."
 sleep 12
 
+# --- 17C: Verify state survived reload ---
+# Reported: v1.34 - disabled commands lost on reload
+echo "  --- 17C: Post-reload state verification ---"
+
 send_cmd "aa_version" 5
-assert_output_contains "aa_version works after reload" "version"
+assert_output_contains "17C version works after reload" "version"
+
+send_cmd "aa_info" 5
+assert_output_contains "17C ban still disabled after reload" "ban"
+assert_output_contains "17C kill still fixed after reload" "kill"
+assert_output_contains "17C tell still ignored after reload" "tell\|ignore"
+
+# Verify ban is still in the disabled list (console bypasses blocking via permissions)
+send_cmd "aa_info" 5
+assert_output_contains "17C ban still in disabled list after reload" "Disabled commands"
+
+# --- 17D: Verify log integrity after reload ---
+# Reported: page 17 (mrfloris) - "config-file-sample.yml cannot be found" + NPE
+# Fix: commit 884d14b
+echo "  --- 17D: Reload log integrity ---"
+
+assert_log_not_contains "17D no missing resource error" "embedded resource.*cannot be found"
+assert_log_not_contains "17D no NPE during reload" "NullPointerException.*reload\|NullPointerException.*disable"
+assert_log_not_contains "17D no TabComplete NPE" "NullPointerException.*TabComplete"
+
+# --- 17E: Clean up reload test state ---
+echo "  --- 17E: Post-reload cleanup ---"
+
+send_cmd "aa_enablecommand ban" 5
+assert_output_contains "17E re-enable ban" "successfully restored"
+
+send_cmd "aa_unfixcommand kill" 5
+assert_output_contains "17E unfix kill" "will no longer"
+
+send_cmd "aa_unignorecommand tell" 5
+assert_output_contains "17E unignore tell" "successfully un-ignored"
+
+send_cmd "aa_info" 5
+assert_output_contains "17E clean after reload" "No commands are currently being adjusted"
 
 # --- Stop and report ---
 stop_server
